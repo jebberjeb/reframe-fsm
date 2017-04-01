@@ -18,11 +18,20 @@
 
 (rf/reg-sub :failure
             (fn [db _]
-              (get db :failure)))
+              (case (get db :failure)
+                "short-password" "Password too short"
+                "match-password" "Passwords don't match"
+                "missing-first-name" "Missing first name"
+                "missing-last-name" "Missing last name"
+                "")))
 
 (rf/reg-sub :success
             (fn [db _]
               (get db :success)))
+
+(rf/reg-sub :disable-submit
+            (fn [db _]
+              (some? (get db :disable-submit))))
 
 ;; -- Events ------------------------------------------------------------------
 
@@ -31,6 +40,7 @@
   {:db (-> db
            (dissoc :failure)
            (dissoc :error)
+           (dissoc :disable-submit)
            (assoc :success true))})
 
 (defn handle-submit-failure
@@ -56,12 +66,13 @@
                                    400
                                    :submit-failure
                                    :submit-error) response]))))
-  {:db db})
+  {:db (assoc db :disable-submit true)})
 
 (defn handle-change-first-name
   [db [_ value]]
   (let [db (-> db
                (dissoc :error)
+               (dissoc :disable-submit)
                (assoc :first-name value))]
     (if (= "missing first name" (:failure db))
       (dissoc db :failure)
@@ -71,6 +82,7 @@
   [db [_ value]]
   (let [db (-> db
                (dissoc :error)
+               (dissoc :disable-submit)
                (assoc :last-name value))]
     (if (= "missing last name" (:failure db))
       (dissoc db :failure)
@@ -78,12 +90,12 @@
 
 (defn handle-change-password
   [db [_ value]]
-  (println db)
   (let [db (-> db
                (dissoc :error)
+               (dissoc :disable-submit)
                (assoc :password value))]
     (if (and (:failure db)
-             (string/starts-with? (:failure db) "password"))
+             (string/index-of (:failure db) "password"))
       (dissoc db :failure)
       db)))
 
@@ -91,9 +103,10 @@
   [db [_ value]]
   (let [db (-> db
                (dissoc :error)
+               (dissoc :disable-submit)
                (assoc :confirm-password value))]
     (if (and (:failure db)
-             (string/starts-with? (:failure db) "password"))
+             (string/index-of (:failure db) "password"))
       (dissoc db :failure)
       db)))
 
@@ -131,7 +144,8 @@
       [input :password] [:br]
       "Confirm Password" [:br]
       [input :confirm-password] [:br]
-      [:input {:type "button"
+      [:input {:disable @(rf/subscribe [:disable-submit])
+               :type "button"
                :value "Register"
                :on-click (fn [e] (rf/dispatch [:submit]))}]])])
 

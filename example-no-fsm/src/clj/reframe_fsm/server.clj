@@ -8,13 +8,13 @@
   (let [{:keys [first-name last-name password confirm-password]}
         (:query-params request)]
     (cond (not= password confirm-password)
-          {:status 400 :body "passwords must match"}
+          {:status 400 :body "match-password"}
           (> 6 (count password))
-          {:status 400 :body "password too short"}
+          {:status 400 :body "short-password"}
           (string/blank? first-name)
-          {:status 400 :body "missing first name"}
+          {:status 400 :body "missing-first-name"}
           (string/blank? last-name)
-          {:status 400 :body "missing last name"}
+          {:status 400 :body "missing-last-name"}
           :else
           {:status 200 :body "success"})))
 

@@ -6,43 +6,69 @@
   (:import
     (goog.net XhrIo)))
 
+;; -- FSM ---------------------------------------------------------------------
+
+(def fsm {:start {:submit :submitting}
+          :submitting {:submit-short-password :short-password
+                       :submit-match-password :match-password
+                       :submit-missing-first-name :missing-first-name
+                       :submit-missing-last-name :missing-last-name
+                       :submit-error :error
+                       :submit-success :success}
+          :short-password {:change-password :start
+                           :change-confirm-password :start}
+          :match-password {:change-password :start
+                           :change-confirm-password :start}
+          :missing-first-name {:change-first-name :start}
+          :missing-last-name {:change-last-name :start}
+          :error {:change-password :start
+                  :change-confirm-password :start
+                  :change-first-name :start
+                  :change-last-name :start}
+          :success nil})
+
+(defn next-state
+  [db event]
+  (if-let [new-state (get-in fsm [(:state db) event])]
+    (assoc db :state new-state)
+    db))
+
 ;; -- Subscriptions -----------------------------------------------------------
 
 (rf/reg-sub :input-value
             (fn [db [_ value-kw]]
               (get db value-kw "")))
 
-(rf/reg-sub :error
-            (fn [db _]
-              (get db :error)))
-
 (rf/reg-sub :failure
             (fn [db _]
-              (get db :failure)))
+              (case (:state db)
+                :error "Something went wrong!"
+                :short-password "Password too short"
+                :match-password "Passwords don't match"
+                :missing-first-name "Missing first name"
+                :missing-last-name "Missing last name"
+                nil)))
 
 (rf/reg-sub :success
             (fn [db _]
-              (get db :success)))
+              (= :success (:state db))))
+
+(rf/reg-sub :disable-submit
+            (fn [db _]
+              (= :start (:state db))))
 
 ;; -- Events ------------------------------------------------------------------
 
-(defn handle-submit-success
-  [{:keys [db]} [_ response]]
-  {:db (-> db
-           (dissoc :failure)
-           (dissoc :error)
-           (assoc :success true))})
+(defn handle-init
+  [{:keys [db]} _]
+  (assoc db :state :start))
 
-(defn handle-submit-failure
-  [{:keys [db]} [_ response]]
-  {:db (assoc db :failure response)})
-
-(defn handle-submit-error
-  [{:keys [db]} [_ response]]
-  {:db (assoc db :error response)})
+(defn handle-next-state
+  [db [event _]]
+  (next-state db event))
 
 (defn handle-submit
-  [{:keys [db]} _]
+  [{:keys [db]} [event _]]
   (let [{:keys [first-name last-name password confirm-password]} db]
     (XhrIo/send (str "/foo?first-name=" first-name
                      "&last-name=" last-name
@@ -54,56 +80,28 @@
                                    200
                                    :submit-success
                                    400
-                                   :submit-failure
+                                   (keyword (str "submit-" response))
                                    :submit-error) response]))))
-  {:db db})
+  {:db (next-state db event)})
 
-(defn handle-change-first-name
-  [db [_ value]]
-  (let [db (-> db
-               (dissoc :error)
-               (assoc :first-name value))]
-    (if (= "missing first name" (:failure db))
-      (dissoc db :failure)
-      db)))
+(defn handle-change-field
+  [field-kw db [event value]]
+  (-> db
+      (next-state event)
+      (assoc field-kw value)))
 
-(defn handle-change-last-name
-  [db [_ value]]
-  (let [db (-> db
-               (dissoc :error)
-               (assoc :last-name value))]
-    (if (= "missing last name" (:failure db))
-      (dissoc db :failure)
-      db)))
-
-(defn handle-change-password
-  [db [_ value]]
-  (println db)
-  (let [db (-> db
-               (dissoc :error)
-               (assoc :password value))]
-    (if (and (:failure db)
-             (string/starts-with? (:failure db) "password"))
-      (dissoc db :failure)
-      db)))
-
-(defn handle-change-confirm-password
-  [db [_ value]]
-  (let [db (-> db
-               (dissoc :error)
-               (assoc :confirm-password value))]
-    (if (and (:failure db)
-             (string/starts-with? (:failure db) "password"))
-      (dissoc db :failure)
-      db)))
-
+(rf/reg-event-db :init handle-init)
 (rf/reg-event-fx :submit handle-submit)
-(rf/reg-event-fx :submit-success handle-submit-success)
-(rf/reg-event-fx :submit-failure handle-submit-failure)
-(rf/reg-event-db :change-first-name handle-change-first-name)
-(rf/reg-event-db :change-last-name handle-change-last-name)
-(rf/reg-event-db :change-password handle-change-password)
-(rf/reg-event-db :change-confirm-password handle-change-confirm-password)
+(rf/reg-event-db :submit-success handle-next-state)
+(rf/reg-event-db :submit-match-password handle-next-state)
+(rf/reg-event-db :submit-short-password handle-next-state)
+(rf/reg-event-db :submit-missing-first-name handle-next-state)
+(rf/reg-event-db :submit-missing-last-name handle-next-state)
+(rf/reg-event-db :change-first-name (partial handle-change-field :first-name))
+(rf/reg-event-db :change-last-name (partial handle-change-field :last-name))
+(rf/reg-event-db :change-password (partial handle-change-field :password))
+(rf/reg-event-db :change-confirm-password (partial handle-change-field
+                                                   :confirm-password))
 
 ;; -- Rendering ---------------------------------------------------------------
 
@@ -139,3 +137,4 @@
 
 (enable-console-print!)
 (reagent/render [ui] (js/document.getElementById "app"))
+(rf/dispatch [:init])

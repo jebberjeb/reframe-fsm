@@ -15,6 +15,7 @@ From the `user` namespace at the REPL:
 user=> (go) ;; start webserver
 ...
 user=> (watch-cljs) ;; start cljsbuild auto
+...
 ```
 
 ## License
