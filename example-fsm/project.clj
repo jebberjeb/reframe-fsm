@@ -15,6 +15,9 @@
 
                  ;; Reframe
                  [reagent  "0.6.0-rc"]
-                 [re-frame "0.9.0"]]
+                 [re-frame "0.9.0"]
 
-  :source-paths ["src/clj"])
+                 ;; Generate FSM diagram
+                 [fsmviz "0.1.0"]]
+
+  :source-paths ["src/clj" "src/cljc"])

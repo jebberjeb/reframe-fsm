@@ -10,6 +10,8 @@
             :asset-path "/js/out"
             :output-dir "resources/public/js/out"})
 
+;; This is enough, even though we're using cljc, since the classpath was
+;; generated from the :source-paths in project.clj which include src/cljc.
 (def src "src/cljs")
 
 (defn build-cljs

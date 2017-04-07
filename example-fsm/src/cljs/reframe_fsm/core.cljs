@@ -2,36 +2,10 @@
   (:require
     [clojure.string :as string]
     [reagent.core :as reagent]
+    [reframe-fsm.fsm :refer [next-state]]
     [re-frame.core :as rf])
   (:import
     (goog.net XhrIo)))
-
-;; -- FSM ---------------------------------------------------------------------
-
-(def fsm {:start {:submit :submitting}
-          :submitting {:submit-short-password :short-password
-                       :submit-match-password :match-password
-                       :submit-missing-first-name :missing-first-name
-                       :submit-missing-last-name :missing-last-name
-                       :submit-error :error
-                       :submit-success :success}
-          :short-password {:change-password :start
-                           :change-confirm-password :start}
-          :match-password {:change-password :start
-                           :change-confirm-password :start}
-          :missing-first-name {:change-first-name :start}
-          :missing-last-name {:change-last-name :start}
-          :error {:change-password :start
-                  :change-confirm-password :start
-                  :change-first-name :start
-                  :change-last-name :start}
-          :success nil})
-
-(defn next-state
-  [db event]
-  (if-let [new-state (get-in fsm [(:state db) event])]
-    (assoc db :state new-state)
-    db))
 
 ;; -- Subscriptions -----------------------------------------------------------
 
@@ -55,13 +29,13 @@
 
 (rf/reg-sub :disable-submit
             (fn [db _]
-              (= :start (:state db))))
+              (= :ready (:state db))))
 
 ;; -- Events ------------------------------------------------------------------
 
 (defn handle-init
   [{:keys [db]} _]
-  (assoc db :state :start))
+  (assoc db :state :ready))
 
 (defn handle-next-state
   [db [event _]]
@@ -138,3 +112,5 @@
 (enable-console-print!)
 (reagent/render [ui] (js/document.getElementById "app"))
 (rf/dispatch [:init])
+
+;; TODO - shouldn't need :init handler anymore, next-state should work.

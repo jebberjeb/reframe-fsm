@@ -1,0 +1,26 @@
+0: digraph {
+1: rankdir=LR;
+2: start->ready [label=":init",style=null,constraint=true,dir=null];
+3: shortpassword->ready [label=":change-password",style=null,constraint=true,dir=null];
+4: shortpassword->ready [label=":change-confirm-password",style=null,constraint=true,dir=null];
+5: ready->submitting [label=":submit",style=null,constraint=true,dir=null];
+6: missinglastname->ready [label=":change-last-name",style=null,constraint=true,dir=null];
+7: missingfirstname->ready [label=":change-first-name",style=null,constraint=true,dir=null];
+8: submitting->shortpassword [label=":submit-short-password",style=null,constraint=true,dir=null];
+9: submitting->matchpassword [label=":submit-match-password",style=null,constraint=true,dir=null];
+10: submitting->missingfirstname [label=":submit-missing-first-name",style=null,constraint=true,dir=null];
+11: submitting->missinglastname [label=":submit-missing-last-name",style=null,constraint=true,dir=null];
+12: submitting->error [label=":submit-error",style=null,constraint=true,dir=null];
+13: submitting->success [label=":submit-success",style=null,constraint=true,dir=null];
+14: error->ready [label=":change-password",style=null,constraint=true,dir=null];
+15: error->ready [label=":change-confirm-password",style=null,constraint=true,dir=null];
+16: error->ready [label=":change-first-name",style=null,constraint=true,dir=null];
+17: error->ready [label=":change-last-name",style=null,constraint=true,dir=null];
+18: matchpassword->ready [label=":change-password",style=null,constraint=true,dir=null];
+19: matchpassword->ready [label=":change-confirm-password",style=null,constraint=true,dir=null];
+20: start [shape=circle,label="",style=filled,fillcolor="#000000", height=0.25,width=0.25
+21:           ];
+22: success [shape=doublecircle,label="success",style=null,fillcolor="null", height=null,width=null
+23:           ];
+24: 
+25: }
