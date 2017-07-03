@@ -45,12 +45,29 @@ Tip #3: ??
 
 ## State Machines in Reframe
 
-## Logging In
+[NOTE] This is just a rough, stream of consciousness first pass.
+
+Reframe is great, we love it. It's our favorite of the React libraries for
+Clojurescript. It also suits new Clojure programmers pretty well. It has
+great documentation. It's core, React, is a pretty intuitive adaptation
+of React to idiomatic Clojure.
+
+It's a natural fit with state machines (I think I remember seeing something
+about this in their own documentation).
+
+Reframe's core concepts map well to state machines. States are related to
+the pure rendering functions, or immutable app state data. Transitions
+are events.
+
+Introduce the `next-state` function and any other generic tooling required
+for this example.
+
+## Thanks for Logging In!
 
 ## Final Thoughts
 
 ## Outline & Notes
-    
+
     ;; general -> specific
     ;; HOWTO -> top-down design -> framework stuff -> specifics
 
@@ -84,9 +101,10 @@ Tip #3: ??
             core concepts a natural fit with state machine model [find link]
         Transitions = Reframe events
         `next-state` function
-        
+
     The Code
         Don't need to show all code, but link to it all.
+        Refer to decisions from design section, maybe show diagram again
 
     Final Thoughts
         Mostly top down & a little bottom-up?
