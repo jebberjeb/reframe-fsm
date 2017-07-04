@@ -37,6 +37,8 @@ Eventually, you realize that the states of your UI is a subset of unique
 combinations of state of all elements of that UI. There may be some
 combinations of element state that are not valid.
 
+Talk specifics -- actual states & transitions of the sample app.
+
 Tip #1: Your FSM data shouldn't be more than a page of code.
 
 Tip #2: Keep like things together. [NOTE] Review Horrocks for this.
@@ -57,14 +59,34 @@ about this in their own documentation).
 
 Reframe's core concepts map well to state machines. States are related to
 the pure rendering functions, or immutable app state data. Transitions
-are events.
+are events. Subscriptions?
 
 Introduce the `next-state` function and any other generic tooling required
 for this example.
 
 ## Thanks for Logging In!
 
+[NOTE] This is just a rough, stream of consciousness first pass.
+
+Refer to previous design, the state diagram.
+
+Write the code for the first state, which should be mostly rendering and
+subscriptions.
+
+Plumbing to set the initial state.
+
+Then, do the first real transition, which should be an event, followed by
+updates to the subscriptions & rendering.
+
+Walk through the rest of the events, show them, or simply link to the code.
+
+Done?
+
+Maybe add/change a feature.
+
 ## Final Thoughts
+
+
 
 ## Outline & Notes
 
