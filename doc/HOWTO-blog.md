@@ -1,4 +1,4 @@
-# Restate Your UI: Creating a User Interface with Reframe and State Machines
+# Restate Your UI: Creating a User Interface with Re-frame and State Machines
 
 Earlier this year our team started experimenting with state machines in our
 user interface programming.  After a few months of unusually tolerable UI
@@ -11,30 +11,24 @@ Last time, we presented this state machine based approach to UI
 programming.  We discussed some of the problems it solves by contrasting it
 with a more traditional bottom-up, ad hoc approach.  In this article, we
 you through a complete example of how to apply this technique, using a
-simple login UI.
+simple login UI. We're going to use Clojurescript and, since this will
+be a React app, we'll use Re-frame.
 
 
 ## State Machine Design
 
-;; TODO - rewrite this paragraph, talk specifically about web apps, should
-;; decrease ambiguity, and need for explanation.
-;; TODO - also, punch it up!
+Prior to our enlightenment, when building a new React UI, we usually began by
+writing code to render the things on the screen -- buttons, drop-downs, lists
+-- then composed them into views.  Once we had enough of this rendering code in
+place, we wired things together with events. At some point, we were forced to
+add state to our UI. In other words, we did bottom-up design.
 
-Like most of us, when handed a UI to program, you probably start by writing
-code to render things on the screen (drop downs, buttons, etc). From there, we
-usually compose these UI elements together, maybe we work on layout. Once we've
-got a meaningful amount of the UI components -- commontly called the rendering
-code, the view, DOM, etc -- in place, we start wiring it together with events.
-As we add events, we also begin to think about, and probably just hack together
-ad hoc, the application's state. That's your typical, widely accepted,
-bottom-up approach to UI programming.
+;; TODO - link STD
 
-;; NOTE - it's fine to write rendering code bottom-up or ad hoc. That doesn't
-;; change.
-
-The design approach presented here is different. Before writing any code, we're
-going to do some top-down design. We'll examine the UI's events and its state
-in order to build a high-level model of our UI -- a state transition diagram.
+The design approach presented here is different. We're going to do some
+top-down design before writing a line of code.  We'll examine the UI's events
+and its states in order to build a high-level model using a State Transition
+Diagram.
 
 ;; TODO clean this up, punch it up.
 
@@ -109,6 +103,8 @@ State    |Email Req  |Pwd Req|Not Exists |Bad Pwd|Login Button
 ---------+-----------+-------+-----------+-------+------------
 Ready     -           -       -           -       Enabled
 
+need words ...
+
 State: Ready
 Action: Click submit
 Result: "Email required" error is displayed
@@ -175,22 +171,26 @@ Tip #2: Keep like things together. [NOTE] Review Horrocks for this.
 Tip #3: ??
 
 
-## State Machines in Reframe
+## State Machines in Re-frame
+
+;; Might want to say that if you're interested in Re-frame basics, look
+;; at their docs, or Eric Normand's new guide.
+;; https://purelyfunctional.tv/guide/re-frame-building-blocks/
 
 ;; NOTE This is just a rough, stream of consciousness first pass.
 
-Reframe is great, we love it. It's our favorite of the React libraries for
+Re-frame is great, we love it. It's our favorite of the React libraries for
 Clojurescript. It also suits new Clojure programmers pretty well. It has
 great documentation. It's core, React, is a pretty intuitive adaptation
 of React to idiomatic Clojure.
 
 It's a natural fit with state machines (I think I remember seeing something
-about this in their own documentation). See Horrocks 35-37. Reframe's
+about this in their own documentation). See Horrocks 35-37. Re-frame's
 (as well as Redux's) pure rendering functions, which are functions of state
 work well here. Immutable data is also an intuitive match to the
 state machine's core concept: F(current state, event) = Next State.
 
-Reframe's core concepts map well to state machines. States are related to
+Re-frame's core concepts map well to state machines. States are related to
 the pure rendering functions, or immutable app state data. Transitions
 are events. Subscriptions?
 
@@ -234,8 +234,8 @@ Maybe add/change a feature.
         This time we're going to show you how to apply this technique to
           a simple application.
 
-    ** Do we need to introduce Reframe in the intro, or can it wait until
-    we get to the Reframe specific stuff?
+    ** Do we need to introduce Re-frame in the intro, or can it wait until
+    we get to the Re-frame specific stuff?
 
     Design
         Top down
@@ -248,15 +248,15 @@ Maybe add/change a feature.
             Not too many states
             Keep like things together
 
-    Reframe
+    Re-frame
         Introduce it
         popular choice, probably second to Om
-        Personally, Of Om, raw Reagent and Reframe, Quiesence Reframe is my
+        Personally, Of Om, raw Reagent and Re-frame, Quiesence Re-frame is my
         favorite -- why?
             docs
             builds on reagent
             core concepts a natural fit with state machine model [find link]
-        Transitions = Reframe events
+        Transitions = Re-frame events
         `next-state` function
 
     The Code
@@ -275,3 +275,4 @@ Maybe add/change a feature.
     Don't use "application"
     the user does "actions"
     the UI generates & handles "events"
+    "Re-frame", not reframe re-frame Reframe
