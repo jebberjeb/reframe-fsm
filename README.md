@@ -1,6 +1,27 @@
 # reframe-fsm
 
-A collection of example [reframe]() projects.
+A collection of example [reframe]() projects that implement the following
+requirements. Actually, they don't quite yet, but soon will.
+
+## Requirements
+
+* When login button is clicked
+  * If email is blank, display error "email required"
+  * If password is blank, display error "password required"
+  * If email doesn't exist display error "user does not exist"
+  * If password not valid display error "invalid password"
+
+* Remove "password required" error when password is changed
+* Remove "email required" error when email is changed
+* Remove "user does not exist" error when email is changed
+* Remove "invalid password" error when password is changed
+
+* Login button
+  * Is disabled on submit request
+  * Is disabled when error present
+  * Is enabled when error removed
+
+* Mock success by showing an alert of success when there are no errors
 
 ## Examples
 

@@ -42,28 +42,9 @@ we go.
 ;; NOTE This is just a rough, stream of consciousness first pass. A walkthrough
 ;; of my thought process in actually designing the STD.
 
-;; Do we need to actually say what didn't work? Probably not. Let's just
-;; explain what we actually do. So how do we describe that iterative process.
+;; TODO - remove the stuff about what doesn't work
 
-First, we need a statement of requirements. And I'm not sure where this should
-go, but putting it here for now. Maybe just link to it, put it in /docs.
-
-* When login button is clicked
-  * If email is blank, display error "email required"
-  * Remove "email required" error when email is changed
-  * If password is blank, display error "password required"
-  * Remove "password required" error when password is changed
-* If email doesn't exist display error "user does not exist"
-* Remove "user does not exist" error when email is changed
-* If password not valid display error "invalid password"
-* Remove "invalid password" error when password is changed
-* Disable login button on submit request
-* Disable login button if error is present
-* Enable login button if error is removed
-
-Do we need this one? Is there a better way to mock it? alert?
-
-* Redirect them to /profile on successful submit response
+;; TODO - we've moved requirements, need to refer to them here
 
 I start by making a table of the individual elements who's state may
 change. I do that because I already understand that, for a UI, the
