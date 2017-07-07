@@ -1,18 +1,18 @@
 # Restate Your UI: Creating a User Interface with Re-frame and State Machines
 
 Earlier this year our team started experimenting with state machines in our
-user interface programming.  After a few months of unusually tolerable UI
-work, dozens of "Aha!" moments, and some (lots of) back patting, we looked
-back and realized this pattern had transformed our codebase.  A consistent
-approach to design and a simple high-level abstraction had made extending
-each other's code a piece of cake.
+user interface programming.  After a few months of unusually tolerable UI work,
+dozens of "Aha!" moments, and some (lots of) back patting, we looked back and
+realized this pattern had transformed our codebase.  A consistent approach to
+design and a simple high-level abstraction had made extending each other's code
+a piece of cake.
 
-Last time, we presented this state machine based approach to UI
-programming.  We discussed some of the problems it solves by contrasting it
-with a more traditional bottom-up, ad hoc approach.  In this article, we
-you through a complete example of how to apply this technique, using a
-simple login UI. We're going to use Clojurescript and, since this will
-be a React app, we'll use Re-frame.
+Last time, we presented this state machine based approach to UI programming.
+We discussed some of the problems it solves by contrasting it with a more
+traditional bottom-up, ad hoc approach.  In this article, we you through a
+complete example of how to apply this technique, using a simple login UI. We're
+going to use Clojurescript and, since this will be a React app, we'll use
+Re-frame.
 
 
 ## State Machine Design
@@ -27,20 +27,23 @@ add state to our UI. In other words, we did bottom-up design.
 
 The design approach presented here is different. We're going to do some
 top-down design before writing a line of code.  We'll examine the UI's events
-and its states in order to build a high-level model using a State Transition
-Diagram.
+and its states in order to build a high-level model using a [State Transition
+Diagram]().
 
-;; TODO clean this up, punch it up.
+;; TODO - show an example state transition diagram graphic
 
-On first glance, it might seem that to build a state transition diagram, you'd
-start by drawing the states, then connecting them with transitions.  You try
-it, it doesn't work, so you try again, starting with the transitions.  We know,
-from the previous article, that user actions & system events become the
-transitions of the state machine. When you're building UI, which is almost
-always event-driven, then transitions are easy.
+It's tempting to try to list out all of the UI's states then connect them.
+We're not going to do that. We're building UI. UI is event-driven.  We know
+from the previous article that user actions (and system events) become the
+transitions of the State Transition Diagram.  So we'll start there.  We'll walk
+through all of the things a user can do, discovering all of our UI's states as
+we go.
 
 ;; NOTE This is just a rough, stream of consciousness first pass. A walkthrough
 ;; of my thought process in actually designing the STD.
+
+;; Do we need to actually say what didn't work? Probably not. Let's just
+;; explain what we actually do. So how do we describe that iterative process.
 
 First, we need a statement of requirements. And I'm not sure where this should
 go, but putting it here for now. Maybe just link to it, put it in /docs.
