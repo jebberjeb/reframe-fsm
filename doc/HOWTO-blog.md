@@ -9,8 +9,8 @@ a piece of cake.
 
 Last time, we presented this state machine based approach to UI programming.
 We discussed some of the problems it solves by contrasting it with a more
-traditional bottom-up, ad hoc approach.  In this article, we you through a
-complete example of how to apply this technique, using a simple login UI. We're
+traditional bottom-up, ad hoc approach.  In this article, we take you through a
+complete example of how to apply this technique using a simple login UI. We're
 going to use Clojurescript and, since this will be a React app, we'll use
 Re-frame.
 
@@ -20,12 +20,12 @@ Re-frame.
 Prior to our enlightenment, when building a new React UI, we usually began by
 writing code to render the things on the screen -- buttons, drop-downs, lists
 -- then composed them into views.  Once we had enough of this rendering code in
-place, we wired things together with events. At some point, we were forced to
+place, we wired things together with events.  At some point, we were forced to
 add state to our UI. In other words, we did bottom-up design.
 
 ;; TODO - link STD
 
-The design approach presented here is different. We're going to do some
+The design approach presented here is different.  We're going to do some
 top-down design before writing a line of code.  We'll examine the UI's events
 and its states in order to build a high-level model using a [State Transition
 Diagram]().
@@ -39,41 +39,17 @@ transitions of the State Transition Diagram.  So we'll start there.  We'll walk
 through all of the things a user can do, discovering all of our UI's states as
 we go.
 
-;; NOTE This is just a rough, stream of consciousness first pass. A walkthrough
-;; of my thought process in actually designing the STD.
+As each new state is discovered, we'll add it to a table which describes it.
+The UI starts out with all of its text fields and buttons enabled.  We'll name
+that state "Ready".
 
-;; TODO - remove the stuff about what doesn't work
+State | Error Message | Login Button
+------+---------------+-------------
+Ready   ""              Enabled
+
+;; Draft 0 starts here
 
 ;; TODO - we've moved requirements, need to refer to them here
-
-I start by making a table of the individual elements who's state may
-change. I do that because I already understand that, for a UI, the
-"states" is the set of all distinct combinations of the individual elements'
-states -- minus combinations that aren't valid. For example, in our app,
-having multiple error messages visible at the same time isn't valid.
-
-We don't include the email and password inputs because their state isn't
-going to change (other than their value). They don't ever get disabled.
-
-
-|Email Req  |Pwd Req|Not Exists |Bad Pwd|Login Button
-------------+-------+-----------+-------+-----------
-?            
-
-Then I realize I don't know how to add "submitting" to this thing. So
-maybe starting from all the possible combos, then filtering down isn't
-quite right. Besides this chart would be mostly useless.
-
-So I take another approach. I think about all of the possible actions
-I can take, all of the use cases. So, rather than listing all the states
-out, then connecting them, I'm really building the transition diagram
-as I go, and I'm also building up that table at the same time -- just
-to contain the details of each state.
-
-So, update the table to tie them together.
-
-State    |Email Req  |Pwd Req|Not Exists |Bad Pwd|Login Button
----------+-----------+-------+-----------+-------+------------
 
 Then, starting from an initial state (we'll call it "Ready" to be
 consisten with previous post), think of all the possible actions.
