@@ -145,6 +145,9 @@ function mapStateToProps(state) {
 // dispatch directly from the view code.
 function mapDispatchToProps(dispatch) {
     return {
+        // NOTE I think using anonymous functions like this will cause
+        // props to be "different" every render. Perhaps we should bind
+        // these somewhere in the constructor.
         onFirstNameChange: function(e) {
             dispatch(setFirstName(e.target.value));
         },
@@ -193,10 +196,10 @@ function RegForm(props) {
 
 var ReduxRegForm = connect(mapStateToProps, mapDispatchToProps)(RegForm);
 
-var store = createStore(
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(
         rootReducer,
-        applyMiddleware(
-            thunkMiddleware));
+        composeEnhancers(applyMiddleware(thunkMiddleware)));
 
 ReactDOM.render(
         <Provider store={store}>
