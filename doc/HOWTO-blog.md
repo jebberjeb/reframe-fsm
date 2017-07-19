@@ -41,46 +41,41 @@ we go.
 
 As each new state is discovered, we'll add it to a table which describes it.
 The UI starts out with all of its text fields and buttons enabled.  We'll name
-that state "Ready".
+that state "Ready", and make it our State Transition Diagram's starting state.
 
 State | Error Message | Login Button
 ------+---------------+-------------
 Ready   ""              Enabled
 
+[start] --> Ready
+
 ;; Draft 0 starts here
 
-;; TODO - we've moved requirements, need to refer to them here
+--- WIP
 
-Then, starting from an initial state (we'll call it "Ready" to be
-consisten with previous post), think of all the possible actions.
-(First, we add a state to the table for "Ready", and start drawing
-our state transition diagram with the first state).
+There are really only two things a user can do at this point, type some text
+into a field, or click the submit button.  I see a button, I think click, so
+let's go with that.  So our current state is `Ready`. The action we're taking
+is to "click submit button".  The result, per our
+[requirements](README.md#requirements), is to display the error "Email
+required".  Also, they say that the login button should be disabled when this
+error is visible.  We did it! We made it to another state, which we'll call
+`Email_Required`. Let's add the details about `Email_Required` to our table, as
+well as our State Transition Diagram.
 
-[start] -init-> Ready
+State          | Error Message   | Login Button
+---------------+-----------------+-------------
+Ready            ""                Enabled
+Email_Required   "Email Required"  Disabled
 
+[start] --> Ready -click-> Email_Required
 
-State    |Email Req  |Pwd Req|Not Exists |Bad Pwd|Login Button
----------+-----------+-------+-----------+-------+------------
-Ready     -           -       -           -       Enabled
+We won't drag you through the whole exercise, but let's do one more state.
 
-need words ...
+* type in email, get back to Ready
+* click submit again, go to Password_Required
 
-State: Ready
-Action: Click submit
-Result: "Email required" error is displayed
-New State: Email Required
-
-Next, we do two things. (1) We add a state to the table.
-
-State      |Email Req  |Pwd Req|Not Exists |Bad Pwd|Login Button
------------+-----------+-------+-----------+-------+------------
-Ready       -           -       -           -       Enabled
-*Email_Req  X           -       -           -       Disabled
-
-(2) We draw a transition for this action to the new state on the
-STD.
-
-[start] -init-> Ready -click-> Email_Req
+---
 
 We ask if there are any other actions that can be taken from Ready,
 and the answer is: no. So we move to another state, Email_Req and
