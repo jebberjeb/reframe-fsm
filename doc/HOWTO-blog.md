@@ -15,7 +15,7 @@ going to use Clojurescript and, since this will be a React app, we'll use
 Re-frame.
 
 
-## State Machine Design
+## State Machine Design -or- Modeling Your UI -or- ??
 
 Prior to our enlightenment, when building a new React UI, we usually began by
 writing code to render the things on the screen -- buttons, drop-downs, lists
@@ -37,11 +37,10 @@ We're not going to do that. We're building UI. UI is event-driven.  We know
 from the previous article that user actions (and system events) become the
 transitions of the State Transition Diagram.  So we'll start there.  We'll walk
 through all of the things a user can do, discovering all of our UI's states as
-we go.
-
-As each new state is discovered, we'll add it to a table which describes it.
-The UI starts out with all of its text fields and buttons enabled.  We'll name
-that state "Ready", and make it our State Transition Diagram's starting state.
+we go.  As each new state is discovered, we'll add it to a table which
+describes it.  The UI starts out with all of its text fields and buttons
+enabled.  We'll name that state "Ready", and make it our State Transition
+Diagram's starting state.
 
 State | Error Message | Login Button
 ------+---------------+-------------
@@ -49,84 +48,123 @@ Ready   ""              Enabled
 
 [start] --> Ready
 
-;; Draft 0 starts here
-
---- WIP
-
-There are really only two things a user can do at this point, type some text
-into a field, or click the submit button.  I see a button, I think click, so
-let's go with that.  So our current state is `Ready`. The action we're taking
-is to "click submit button".  The result, per our
-[requirements](README.md#requirements), is to display the error "Email
-required".  Also, they say that the login button should be disabled when this
-error is visible.  We did it! We made it to another state, which we'll call
-`Email_Required`. Let's add the details about `Email_Required` to our table, as
-well as our State Transition Diagram.
+There are really only two things a user can do from our `Ready` state: type
+some text into a field, or click the Login button.  Buttons are meant to be
+clicked, so let's go with that.  Let's call that action `click_login_button`.
+The result, per our [requirements](README.md#requirements), is to display the
+error "email required" and to disable the Login button.  Since our UI's
+appearance has changed, that means we've moved to a new state state, which
+we'll call `Email_Required`. Let's add the details about `Email_Required` to
+our table, as well as our State Transition Diagram.
 
 State          | Error Message   | Login Button
 ---------------+-----------------+-------------
 Ready            ""                Enabled
-Email_Required   "Email Required"  Disabled
+Email_Required   "email required"  Disabled
 
-[start] --> Ready -click-> Email_Required
+[start] --> Ready -click_login_button-> Email_Required
 
-We won't drag you through the whole exercise, but let's do one more state.
+From our `Email_Required` state, we again try to image all the actions a user
+can take. Since the Login button is disabled, their only options are to enter
+an email or password.  Consulting our [requirements]() tells us that, at this
+point, nothing interesting happens if they change the password.  However, there
+is a requirement to _Remove "email required" error when email is changed_.
+We'll call that action `change_email`.  There's also a general requirement that
+the _Login button is enabled when no error present_.  Our UI's appearance has
+changed again, back to what it looked like in the `Ready` state. Once again,
+let's update our table and State Transition Diagram.
 
-* type in email, get back to Ready
-* click submit again, go to Password_Required
+State          | Error Message   | Login Button
+---------------+-----------------+-------------
+Ready            ""                Enabled
+Email_Required   "email required"  Disabled
 
----
+[start] --> Ready <-change_email- -click_login_button-> Email_Required
 
-We ask if there are any other actions that can be taken from Ready,
-and the answer is: no. So we move to another state, Email_Req and
-think of all possible actions.
+Alright, we're not going to drag you through the entire exercise, but let's
+do one more transition, and we'll move on.
 
-We know that they can't click submit, because it has been disabled
-(per our table & requirements). We also know that if they type in
-the password field, nothing will really change. If they type in
-the email field however, the error message will go away.
+Back in the `Ready` state, our email field now contains some text.  If we click
+that irresistable Login button again, the rules say that, since the password is
+blank, to display a "password required" error message, and to disable the
+Login button.  We'll call our new state, `Password_Required`, and we'll call
+this action `click_login_no_password` (we'll also update our other action names
+to make them more specific).  One last time, we'll update our table and State
+Transition Diagram.
 
-What is the new state in this case? We consult the table and
-realize that we'd be back at the Ready state.
+State            | Error Message      | Login Button
+-----------------+--------------------+-------------
+Ready              ""                   Enabled
+Email_Required     "email required"     Disabled
+Password_Required  "password required"  Disabled
 
-State: Email_Req
-Action: Change Email
-Result: "Email required" error is removed
-New State: Ready
+[start] --> Ready <-change_email- -click_login_no_email-> Email_Required
+                  -click_login_no_password-> Password_Required
 
-We don't need to add anything to the table, but we do need to
-add another transition to our STD.
+Building up our State Transition Diagram incrementally helps us to vet
+requirements up front (you can probably spot some ambiguities in them), as well
+as raise UX questions early. More importantly, we're able to construct a fairly
+complete model of our UI before any real coding happens.
 
-[start] -init-> Ready <-change email- -click-> Email_Req
+State            | Error Message        | Login Button
+-----------------+----------------------+-------------
+Ready              ""                     Enabled
+Email_Required     "email required"       Disabled
+Password_Required  "password required"    Disabled
+User_Not_Exist     "user does not exist"  Disabled
+Invalid_Password   "invalid password"     Disabled
+Loggin_In          ""                     Disabled
 
-So, we'd previous thought there were no more transitions from
-the ready state -- we were wrong. There have to be more. We
-hadn't thought of the case where the email input contains
-something. It turns out there are a few more things that can
-happen here:
+[start] --> Ready <-change_email- -click_login_no_email-> Email_Required
+                  -click_login_no_password-> Password_Required
 
-* An invalid username could be entered into email field
-* A valid username could be entered into email field, but no password
-* A valid username with an invalid password
-* A valid username with a valid password!
+;; TODO Add transitions to and from the new states, making sure to add the
+;; `Logging_In` state.
 
-We perform the same type of analysis for each of these cases,
-and end up with the following table & chart.
+The resulting State Transition Diagram can be represented using simple Clojure
+data literals.
 
-;; TODO show completed table & chart
-;; NOTE is this enough detail? Should we have manually walked them
-;; through another transition?
+```clojure
+{nil                {:init               :ready}
+ :ready             {:login-no-password  :password-required
+                     :login-no-email     :email-required
+                     :try-login          :logging-in}
+ :logging-in        {:login-bad-password :invalid-password
+                     :login-no-user      :user-not-exist
+ :email-required    {:email-changed      :ready}
+ :password-required {:password-changed   :ready}
+ :user-not-exist    {:email-changed      :ready}
+ :invalid-password  {:password-changed   :ready}
+```
 
-Show the actual Clojure data representation.
+Before we dive into the code, let's go over a few things we've learned which
+might help you when using this design approach.
 
-Tip #1: Your FSM data shouldn't be more than a page of code.
+_TIP #1 Your state machine shouldn't require more than a page of Clojure
+code._
 
-Tip #2: Keep like things together. [NOTE] Review Horrocks for this.
+Your first goal with this approach is building a useful model -- something that
+describes your UI at a glance.  Beyond this size, you should consider splitting
+them up.  Generating a diagram from your state machine's data can help with
+this, but we've found that right around the time the code becomes hard to read,
+so does the diagram.
 
-Tip #3: ??
+* _TIP #2 Keep similar things together._
+
+You don't need to create one state machine for your entire UI, or even a single
+view.  For example, if your UI has a user profile page which lets the user
+update their mailing addres in one pane, and notifications settings in another,
+you'll probably want to separate your state machines similarly. We'll go into
+more depth on this in a future post.
+
+* _TIP #3_
+
+;; TODO
 
 
-## State Machines in Re-frame
+## State Machines in Re-Frame -or- ??
+
+;; DRAFT 0 START
 
 ;; Might want to say that if you're interested in Re-frame basics, look
 ;; at their docs, or Eric Normand's new guide.
@@ -153,7 +191,7 @@ Introduce the `next-state` function and any other generic tooling required
 for this example.
 
 
-## Thanks for Logging In!
+## The Code -or- ??
 
 ;; NOTE This is just a rough, stream of consciousness first pass.
 
@@ -174,7 +212,7 @@ Done?
 Maybe add/change a feature.
 
 
-## Final Thoughts
+## Final Thoughts -or- Thanks for Logging In!
 
 
 

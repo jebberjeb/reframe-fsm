@@ -18,8 +18,9 @@ requirements. Actually, they don't quite yet, but soon will.
 
 * Login button
   * Is disabled on submit request
+  * Is enabled when submit request finished
   * Is disabled when error present
-  * Is enabled when error removed
+  * Is enabled when no error present
 
 * Mock success by showing an alert of success when there are no errors
 
