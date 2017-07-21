@@ -167,8 +167,11 @@ more depth on this in a future post.
 [Re-frame](https://github.com/Day8/re-frame) is a Clojurescript library for
 building React applications. While the approach presented here will work
 regardless of the library or framework you're using, we think it fits
-Re-frame's data oriented design particularly nicely. Re-frame's essence is a
-reduction.
+Re-frame's data oriented design particularly nicely.  We're going to cover some
+Re-frame basics here, but for a real introduction to Re-frame, check out [Eric
+Normand's guide]().
+
+Re-frame's essence is a reduction.
 
 ```clojure
 (reduce handle-event app-state event-queue)
