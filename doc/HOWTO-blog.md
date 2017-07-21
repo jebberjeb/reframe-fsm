@@ -162,36 +162,90 @@ more depth on this in a future post.
 ;; TODO
 
 
-## State Machines in Re-Frame -or- ??
+## Re-frame
 
-;; DRAFT 0 START
+[Re-frame](https://github.com/Day8/re-frame) is a Clojurescript library for
+building React applications. While the approach presented here will work
+regardless of the library or framework you're using, we think it fits
+Re-frame's data oriented design particularly nicely. Re-frame's essence is a
+reduction.
 
-;; Might want to say that if you're interested in Re-frame basics, look
-;; at their docs, or Eric Normand's new guide.
-;; https://purelyfunctional.tv/guide/re-frame-building-blocks/
+```clojure
+(reduce handle-event app-state event-queue)
+```
 
-;; NOTE This is just a rough, stream of consciousness first pass.
+Where `handle-event` can be as simple as a pure function of app state and an
+event, returning a new app state.
 
-Re-frame is great, we love it. It's our favorite of the React libraries for
-Clojurescript. It also suits new Clojure programmers pretty well. It has
-great documentation. It's core, React, is a pretty intuitive adaptation
-of React to idiomatic Clojure.
+```clojure
+(defn handle-login
+  [db event]
+  ...
+  db')
 
-It's a natural fit with state machines (I think I remember seeing something
-about this in their own documentation). See Horrocks 35-37. Re-frame's
-(as well as Redux's) pure rendering functions, which are functions of state
-work well here. Immutable data is also an intuitive match to the
-state machine's core concept: F(current state, event) = Next State.
+;; Register event handler
+(re-frame.core/reg-event-db :login handle-login)
+```
 
-Re-frame's core concepts map well to state machines. States are related to
-the pure rendering functions, or immutable app state data. Transitions
-are events. Subscriptions?
+This lines up perfectly with a state machine's state transition function, which
+is a function of the current sate and a transition, returning the next state.
 
-Introduce the `next-state` function and any other generic tooling required
-for this example.
+```clojure
+(defn next-state
+  [state-machine current-state transition]
+  ...
+  next-state)
+```
 
+To recap, our state machine is a map of state to a transition map.
+
+```clojure
+(def state-machine {nil      {:init   :ready}
+                    :ready   {:start  :running}
+                    :running {:finish :done
+                              :abort  :error}})
+```
+
+With this in mind, the implementation of `next-state`, minus any
+error-handling, is pretty simple.
+
+```clojure
+(defn next-state
+  [state-machine current-state transition]
+  (get-in state-machine [current-state transition]))
+```
+
+For our example, we'll use a convenience function which closes over our state
+machine.
+
+```clojure
+(def login-state-machine { ... })
+
+(def login-next-state (partial next-state loginstate-machine))
+```
+
+Assuming we can map our Re-frame events directly to our state-machine's
+transitions (we can), we'll use a general purpose event handling function.
+
+```clojure
+(defn next-state
+  [db [event-kw _]]
+  (update db :state login-next-state event-kw))
+```
+
+That'll allow us to reuse the same code to handle any state change event.
+
+```clojure
+(re-frame.core/reg-event-db :email-changed next-state)
+(re-frame.core/reg-event-db :password-changed next-state)
+```
+
+Even though it isn't quite this simple for every event, as we'll see, hopefully
+this gives you a taste of how naturally this approach feels with Re-frame.
 
 ## The Code -or- ??
+
+;; Draft 0
 
 ;; NOTE This is just a rough, stream of consciousness first pass.
 
