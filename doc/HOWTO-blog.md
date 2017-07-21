@@ -247,79 +247,11 @@ this gives you a taste of how naturally this approach feels with Re-frame.
 
 ;; Draft 0
 
-;; NOTE This is just a rough, stream of consciousness first pass.
-
-Refer to previous design, the state diagram.
-
-Write the code for the first state, which should be mostly rendering and
-subscriptions.
-
-Plumbing to set the initial state.
-
-Then, do the first real transition, which should be an event, followed by
-updates to the subscriptions & rendering.
-
-Walk through the rest of the events, show them, or simply link to the code.
-
-Done?
-
-Maybe add/change a feature.
-
+;; TODO link to the complete example source
+;; TODO what do we actually want to show here?
+;; TODO refer to previous diagram?
 
 ## Final Thoughts -or- Thanks for Logging In!
 
-
-
-## Outline & Notes
-
-    ;; general -> specific
-    ;; HOWTO -> top-down design -> framework stuff -> specifics
-
-    Intro
-        Our experiences
-        Last time we talked about X technique / approach.
-        This time we're going to show you how to apply this technique to
-          a simple application.
-
-    ** Do we need to introduce Re-frame in the intro, or can it wait until
-    we get to the Re-frame specific stuff?
-
-    Design
-        Top down
-        Start by drawing the FSM (sketch or data)
-        States (distinct combinations of UI element states)
-            start w/ states, realize that doesn't work, then start w/ transitions
-            transitions are usually obvious
-        Transitions user actions
-        Guidelines / Tips
-            Not too many states
-            Keep like things together
-
-    Re-frame
-        Introduce it
-        popular choice, probably second to Om
-        Personally, Of Om, raw Reagent and Re-frame, Quiesence Re-frame is my
-        favorite -- why?
-            docs
-            builds on reagent
-            core concepts a natural fit with state machine model [find link]
-        Transitions = Re-frame events
-        `next-state` function
-
-    The Code
-        Don't need to show all code, but link to it all.
-        Refer to decisions from design section, maybe show diagram again
-
-    Final Thoughts
-        Mostly top down & a little bottom-up?
-        Re: final thoughts of previous article
-
-
-    NOTE: words
-
-    "app state" not "application state"
-    "UI" not "user interface" (except the first reference)
-    Don't use "application"
-    the user does "actions"
-    the UI generates & handles "events"
-    "Re-frame", not reframe re-frame Reframe
+;; TODO Lot's of top-down, but still some bottom-up?
+;; TODO reference final thoughts from previous article
