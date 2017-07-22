@@ -14,10 +14,10 @@
    :logging-in        {:login-bad-password :invalid-password
                        :login-no-user      :user-not-exist
                        :login-success      :logged-in}
-   :email-required    {:set-email          :ready}
-   :password-required {:set-password       :ready}
-   :user-not-exist    {:set-email          :ready}
-   :invalid-password  {:set-password       :ready}})
+   :email-required    {:change-email       :ready}
+   :password-required {:change-password    :ready}
+   :user-not-exist    {:change-email       :ready}
+   :invalid-password  {:change-password    :ready}})
 
 ;; -- Subscriptions -----------------------------------------------------------
 
@@ -64,13 +64,13 @@
   [db [event _]]
   (update-next-state db event))
 
-(defn handle-set-email
+(defn handle-change-email
   [db [event email]]
   (-> db
       (assoc :email email)
       (update-next-state event)))
 
-(defn handle-set-password
+(defn handle-change-password
   [db [event password]]
   (-> db
       (assoc :password password)
@@ -115,8 +115,8 @@
 (def interceptors [debug])
 
 (rf/reg-event-db :init interceptors handle-next-state)
-(rf/reg-event-db :set-email interceptors handle-set-email)
-(rf/reg-event-db :set-password interceptors handle-set-password)
+(rf/reg-event-db :change-email interceptors handle-change-email)
+(rf/reg-event-db :change-password interceptors handle-change-password)
 ;; Not a state machine transition
 (rf/reg-event-fx :login-clicked interceptors handle-login-clicked)
 (rf/reg-event-db :login-no-email interceptors handle-next-state)
@@ -139,11 +139,11 @@
     "Email" [:br]
     [:input
      {:value @(rf/subscribe [:email])
-      :on-change #(rf/dispatch [:set-email (-> % .-target .-value)])}] [:br]
+      :on-change #(rf/dispatch [:change-email (-> % .-target .-value)])}] [:br]
     "Password" [:br]
     [:input
      {:value @(rf/subscribe [:password])
-      :on-change #(rf/dispatch [:set-password (-> % .-target .-value)])
+      :on-change #(rf/dispatch [:change-password (-> % .-target .-value)])
       :type "password"}] [:br]
     "Password" [:br]
     [:input {:type "button"

@@ -14,6 +14,8 @@ complete example of how to apply this technique using a simple login UI. We're
 going to use Clojurescript and, since this will be a React app, we'll use
 Re-frame.
 
+;; TODO show a basalmiq mock of the UI
+
 
 ## State Machine Design -or- Modeling Your UI -or- ??
 
@@ -281,18 +283,63 @@ Clojure's powerful data literals deserve a lot of the credit.
 ## Let's Write Some Code -or- ??
 
 ;; TODO punch this transition up
-Now that we've designed our model, and presented some utilities for working
-with it in Re-frame, let's write some code.
 
 ;; START DRAFT 0
 
-;; TODO do we want to show the interceptor refactor here?
-;; TODO Should we have one section for all the code, then one for doing it
-;; with interceptors?
+After designing our model up front, we usually switch back to a traditional,
+bottom-up approach to the rest of the design.  We'll start with a simple
+rendering function that knows nothing about events or app state.
 
-;; TODO link to the complete example source
+```clojure
+(defn ui
+  []
+  [:div
+   [:form
+    "Email" [:br]
+    [:input] [:br]
+    "Password" [:br]
+    [:input] [:br]
+    "Password" [:br]
+    [:input {:type "button"
+             :value "Login"}]]])
+```
+
+First, let's take care of some basic plumbing and wire our inputs up to app
+state.  This new rendering code for the email input refers to two new things:
+an `[:email]` subscription, and an `[:change-email`] event. The event should
+look familiar.
+
+```clojure
+[:input
+  {:value @(rf/subscribe [:email])
+   :on-change #(rf/dispatch [:change-email (-> % .-target .-value)])}]
+```
+
+We'll register the subscription.
+
+```clojure
+(rf/reg-sub
+  :email
+  (fn [db _] (get db :email)))
+```
+
+And an event handler.
+
+```clojure
+(defn handle-change-email
+  [db [_ email]
+  (assoc db :email email))
+
+(rf/reg-event-db :change-email handle-change-email)
+```
+
+;; TODO do we need to stop, show the UI, say we can type into the fields?
+
+After doing the same for our password input, let's wire up the button's
+`click` event.
+
 ;; TODO what do we actually want to show here?
-;;   initial render function (star pw)
+;;   initial render function
 ;;   add functionality for all states
 ;;   introduce subscriptions
 ;;   create subscriptions that we need
@@ -300,11 +347,18 @@ with it in Re-frame, let's write some code.
 ;;   basic event handlers to persist input values
 ;;   add handler for login button
 ;;   add logic for missing email & password
+;;   includes the when-let failure
 ;;   update set-x handlers to transition back to ready
 ;; TODO refer to previous diagram?
 
 Please take a look at the rest of [this sample's code]() to see how the AJAX
 calls are made, etc.
+
+## Interceptors -or- DRY it -or- ??
+
+;; TODO Do we want to show the interceptor refactor here?
+;; TODO Or should we have one section for all the code, then one for doing it
+;; with interceptors?
 
 ## Final Thoughts -or- Thanks for Logging In!
 
