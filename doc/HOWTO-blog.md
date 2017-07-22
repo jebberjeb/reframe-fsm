@@ -14,6 +14,8 @@ complete example of how to apply this technique using a simple login UI. We're
 going to use Clojurescript and, since this will be a React app, we'll use
 Re-frame.
 
+;; TODO add "if you don't know Re-frame, that's ok" verbiage
+
 ;; TODO show a basalmiq mock of the UI
 
 
@@ -338,30 +340,137 @@ And an event handler.
 After doing the same for our password input, let's wire up the button's
 `click` event.
 
-;; TODO what do we actually want to show here?
-;;   initial render function
-;;   add functionality for all states
-;;   introduce subscriptions
-;;   create subscriptions that we need
-;;   wire them into the view
-;;   basic event handlers to persist input values
-;;   add handler for login button
-;;   add logic for missing email & password
-;;   includes the when-let failure
-;;   update set-x handlers to transition back to ready
-;; TODO refer to previous diagram?
+```clojure
+[:input {:type "button"
+             :value "Login"
+             :on-click (fn [e] (rf/dispatch [:login-click]))}]
 
-Please take a look at the rest of [this sample's code]() to see how the AJAX
-calls are made, etc.
+(defn handle-login-click
+  [db _]
+  ;; Noop, no chnage to app state.
+  db)
 
-## Interceptors -or- DRY it -or- ??
+(rf/reg-event-db :login-click handle-login-click)
+```
 
-;; TODO Do we want to show the interceptor refactor here?
-;; TODO Or should we have one section for all the code, then one for doing it
-;; with interceptors?
+With the plumbing out of the way, things can get interesting. We're going to
+start integrating our login state machine.  We'll start by adding logic to
+handle a blank email.  So, we're interested in the transition from `Ready` to
+`Email_Required`, via `login_no_email`.
 
-## Final Thoughts -or- Thanks for Logging In!
+```clojure
+(defn handle-click-login
+  [{:keys [email] :as db} _]
+  (if (string/blank? email)
+    (update-next-state db :login-no-email)
+    db))
+```
 
-;; TODO Not DRY, there's some stuff we can extract (if we don't do interceptor)
-;; TODO Lot's of top-down, but still some bottom-up?
-;; TODO reference final thoughts from previous article
+In other words, when email is blank, all we have to do is advance our state
+machine using the appropriate transition.  That's it!  Actually, we can do a
+bit better.  As with [Redux]() actions, Re-frame's postition is that
+semantically useful, named events are a good thing.  Some people feel this gets
+a little ping-pongy, but we like fine-grained events for traceability. They
+play well with debugging tools like [Re-frisk](), and facilitate time travel.
+
+```clojure
+(defn handle-click-login
+  [{:keys [email] :as db} _]
+  (if (string/blank? email)
+    {:db db
+     :dispatch [:login-no-email]}
+    {:db db}))
+
+;; Register as a effects generating event handler
+(rf/reg-event-fx :login-click handle-login-click)
+(rf/reg-event-db :login-no-email handle-next-state)
+```
+
+To finish implementing the blank email validation, we've got to update our
+rendering code with logic to display the error, and disable the submit button
+when necessary.
+
+```clojure
+(defn ui
+  []
+  [:div
+   (when-let [failure @(rf/subscribe [:failure])]
+     [:div {:style {:color "red"}} failure])
+   [:form
+    ...
+    [:input {:type "button"
+             :value "Login"
+             :disabled @(rf/subscribe [:login-disabled?])
+             :on-click (fn [e] (rf/dispatch [:login-clicked]))}]]])
+```
+
+We've added two new subscriptions: `[:failure]` and `[:login-disabled]`. This
+is another spot we feel like this approach really shines.  We'll implement
+these subscriptions solely based on our state machine's current state.
+
+```clojure
+;; Top-level subscription
+(rf/reg-sub
+  :state
+  (fn [db _] (get db :state)))
+
+;; Depends on [:state] subscription
+(rf/reg-sub
+  :failure
+  (fn [db _] (rf/subscribe [:state]))
+  (fn [state _] (case state
+                  :email-required "email required"
+                  :password-required "password required"
+                  :user-not-exist "user not found"
+                  :invalid-password "invalid password"
+                  nil)))
+
+;; Depends on [:state] subscription
+(rf/reg-sub
+  :login-disabled?
+  (fn [db _] (rf/subscribe [:state]))
+  (fn [state _] (not= state :ready)))
+
+```
+
+Not only does this keep app state simple,  but it lets us take advantage of
+Re-frame's subscription [signal
+graph](https://github.com/Day8/re-frame/blob/master/docs/SubscriptionInfographic.md).
+Long story short, if `:state` doesn't change, neither of the two new
+subscriptions which depend on it will fire.
+
+Moving along in our state machine integration, let's add the logic which
+removes the "email required" error message.  Here, we're interested in the
+transition from `Email_Required` back to `Ready`, via `change_email`.  We've
+already got a handler for this event, so all we need to do is update it.
+
+```clojure
+(defn handle-change-email
+  [db [event email]]
+  (-> db
+      (assoc :email email)
+      (update-next-state event)))
+```
+
+Again, we make use of our existing utilty function to advance the state
+machine.  Why didn't we dispatch an additional event in this case?  The
+`[:change-email]` event is already represented in our state machine, and there
+isn't any conditional logic in the handler -- there's no decision to trace. 
+
+We'll stop there, but this sample's [code]() contains the rest of the
+implementation, including how the AJAX call & related events are structured,
+and code to generate the state transition diagram image.
+
+## Thanks for Logging In!
+
+We've tried to walk you through our design process.  There is, admittedly,
+plenty of subjectivity in both design and implementation.  The real power here
+is the model -- the state machine -- which creates all sorts of opportunity.
+For example, once you've enumerated all of the UI's states, you could easily
+prototype them all up front.  You could automate testing of such a prototype by
+mocking up a _single_ bit of app state (`:state` in this case).  In addition,
+by using a widely understood abstraction, you empower programmers joining your
+project, who might not be familiar with your particular technology choices.
+
+In future posts, we'll tackle DRYing up this code using [interceptors](),
+composing state machines, parameterizing transitions, and more!
