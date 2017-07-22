@@ -7,8 +7,8 @@
   [request]
   (let [{:keys [email password]}
         (:query-params request)]
-    ;; {:status 200 :body "success"}
-    ;; {:status 400 :body "invalid password"}
+    #_{:status 200 :body "success"}
+    #_{:status 400 :body "invalid password"}
     {:status 400 :body "user not found"}))
 
 (def routes #{["/login" :get 'reframe-fsm.server/login]})

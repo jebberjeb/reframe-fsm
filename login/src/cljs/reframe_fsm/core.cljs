@@ -1,5 +1,6 @@
 (ns reframe-fsm.core
   (:require
+    [ajax.core :as ajax]
     [clojure.string :as string]
     [day8.re-frame.http-fx]
     [reagent.core :as reagent]
@@ -13,10 +14,10 @@
    :logging-in        {:login-bad-password :invalid-password
                        :login-no-user      :user-not-exist
                        :login-success      :logged-in}
-   :email-required    {:email-changed      :ready}
-   :password-required {:password-changed   :ready}
-   :user-not-exist    {:email-changed      :ready}
-   :invalid-password  {:password-changed   :ready}})
+   :email-required    {:set-email          :ready}
+   :password-required {:set-password       :ready}
+   :user-not-exist    {:set-email          :ready}
+   :invalid-password  {:set-password       :ready}})
 
 ;; -- Subscriptions -----------------------------------------------------------
 
@@ -31,7 +32,8 @@
                   :email-required "email required"
                   :password-required "password required"
                   :user-not-exist "user not found"
-                  :invalid-password "invalid password")))
+                  :invalid-password "invalid password"
+                  nil)))
 
 (rf/reg-sub
   :password
@@ -54,7 +56,9 @@
 
 (defn update-next-state
   [db event]
-  (update db :state (partial next-state login-state-machine) event))
+  (if-let [new-state (next-state login-state-machine (:state db) event)]
+    (assoc db :state new-state)
+    db))
 
 (defn handle-next-state
   [db [event _]]
@@ -87,13 +91,15 @@
   [{:keys [db]} [event _]]
   (let [{:keys [email password]} db]
     {:db (update-next-state db event)
-     :http-xhrio {:uri (format "/login?email=%s&password=%s" email password)
+     :http-xhrio {:uri (str "/login?email=" email
+                            "&password=" password)
+                  :response-format (ajax/text-response-format)
                   :method :get
                   :on-success [:login-success]
                   :on-failure [:login-failure]}}))
 
 (defn handle-login-failure
-  [{:keys [db]} [_ response]]
+  [{:keys [db]} [_ {:keys [response]}]]
   {:db db
    :dispatch (case response
                "user not found"
@@ -101,19 +107,26 @@
                "invalid password"
                [:login-bad-password])})
 
-(rf/reg-event-db :init handle-next-state)
-(rf/reg-event-db :set-email handle-set-email)
-(rf/reg-event-db :set-password handle-set-password)
+(def debug (rf/after (fn [db event]
+                       (.log js/console "=======")
+                       (.log js/console "state: " (str (:state db)))
+                       (.log js/console "event: " (str event)))))
+
+(def interceptors [debug])
+
+(rf/reg-event-db :init interceptors handle-next-state)
+(rf/reg-event-db :set-email interceptors handle-set-email)
+(rf/reg-event-db :set-password interceptors handle-set-password)
 ;; Not a state machine transition
-(rf/reg-event-fx :login-clicked handle-login-clicked)
-(rf/reg-event-db :login-no-email handle-next-state)
-(rf/reg-event-db :login-no-password handle-next-state)
-(rf/reg-event-fx :try-login handle-try-login)
+(rf/reg-event-fx :login-clicked interceptors handle-login-clicked)
+(rf/reg-event-db :login-no-email interceptors handle-next-state)
+(rf/reg-event-db :login-no-password interceptors handle-next-state)
+(rf/reg-event-fx :try-login interceptors handle-try-login)
 ;; Not a state machine transition
-(rf/reg-event-fx :login-failure handle-login-failure)
-(rf/reg-event-db :login-no-user handle-next-state)
-(rf/reg-event-db :login-bad-password handle-next-state)
-(rf/reg-event-db :login-success handle-next-state)
+(rf/reg-event-fx :login-failure interceptors handle-login-failure)
+(rf/reg-event-db :login-no-user interceptors handle-next-state)
+(rf/reg-event-db :login-bad-password interceptors handle-next-state)
+(rf/reg-event-db :login-success interceptors handle-next-state)
 
 ;; -- Rendering ---------------------------------------------------------------
 
