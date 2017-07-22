@@ -167,19 +167,18 @@ _TIP #3_
 
 [Re-frame](https://github.com/Day8/re-frame) is a Clojurescript library for
 building React applications. While the approach presented here will work
-regardless of the library or framework you're using, we think it fits
-Re-frame's data oriented design particularly nicely.  For a true introduction
-to Re-frame, check out [Eric Normand's guide]().  We'll quickly cover the
-basic pieces of Re-frame:
+regardless of the library or framework you're using, it fits Re-frame's data
+oriented design particularly nicely.  For a proper introduction to Re-frame,
+check out [Eric Normand's guide]().  We'll quickly cover the basic pieces here.
 
-* App state
+* Application state
 * Rendering
 * Subscriptions
 * Events
 
 All of Re-frame's application state is stored in one place -- using a single
-[Reagent] r/atom. Any changes to it trigger rendering.  Rendering in Re-frame
-is exactly what you'd expect: you use pure functions to generate a
+[Reagent]() `atom`. Any changes to it trigger rendering.  Rendering in Re-frame
+is done exactly how you'd expect: you use pure functions to produce a
 representation of the DOM using [Hiccup]() data.
 
 ```clojure
@@ -190,8 +189,9 @@ representation of the DOM using [Hiccup]() data.
    [:span (:author comment)]])
 ```
 
-Re-frame's subscriptions API is how you expose a particular slice of app state
-to a component.
+Re-frame's subscriptions API lets you expose a particular slice of app state to
+a component. The `comments` component below will render whenever the data
+returned by the `:comments` subscription changes.
 
 ```clojure
 (defn comments
@@ -204,9 +204,9 @@ to a component.
   (fn [db _] (sort-by :date (get db :comments))))
 ```
 
-Now, on to the fun part.  Re-frame's essence is a reduction.  To compute the
-current app state, reduce over any queued events by using their registered
-handler functions.
+Now, on to the fun part.  True to its functional nature, Re-frame's _essence_
+is nothing more than a reduction.  To compute the current app state, simply
+reduce over any queued events by using their registered handler functions.
 
 ```clojure
 (reduce handle-event app-state event-queue)
@@ -248,8 +248,7 @@ To recap, our state machine is a map.
                     ...}
  ```
 
-With this in mind, a basic implementation of `next-state`, minus any
-error-handling, is pretty simple.
+With this in mind, a basic implementation of `next-state` is pretty simple.
 
 ```clojure
 (defn next-state
@@ -274,20 +273,18 @@ the transitions of our state machine.
   (update-next-state db event))
 ```
 
-;; Draft
+The tiny amount of code it takes to adapt our state machine data to Re-frame's
+event handlers is an indicator of how naturally they fit together.  As usual,
+Clojure's powerful data literals deserve a lot of the credit.
 
-;; TODO punch this ending up
 
-One thing that I like about this approach is that it _doesn't_ take much code
-to glue these things together. Focus on saying that.
+## Let's Write Some Code -or- ??
 
-;; TODO work on section name
-## The Code -or- ??
+;; TODO punch this transition up
+Now that we've designed our model, and presented some utilities for working
+with it in Re-frame, let's write some code.
 
-Now that we've designed our model, and presented some tools for working
-with it in Re-frame, let's dive into our example's implementation.
-
-;; TODO debug the source
+;; START DRAFT 0
 
 ;; TODO do we want to show the interceptor refactor here?
 ;; TODO Should we have one section for all the code, then one for doing it
@@ -305,6 +302,9 @@ with it in Re-frame, let's dive into our example's implementation.
 ;;   add logic for missing email & password
 ;;   update set-x handlers to transition back to ready
 ;; TODO refer to previous diagram?
+
+Please take a look at the rest of [this sample's code]() to see how the AJAX
+calls are made, etc.
 
 ## Final Thoughts -or- Thanks for Logging In!
 
