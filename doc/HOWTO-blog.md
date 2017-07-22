@@ -19,7 +19,7 @@ Re-frame.
 ;; TODO show a basalmiq mock of the UI
 
 
-## State Machine Design -or- Modeling Your UI -or- ??
+## Modeling Your UI
 
 Prior to our enlightenment, when building a new React UI, we usually began by
 writing code to render the things on the screen -- buttons, drop-downs, lists
@@ -282,7 +282,7 @@ event handlers is an indicator of how naturally they fit together.  As usual,
 Clojure's powerful data literals deserve a lot of the credit.
 
 
-## Let's Write Some Code -or- ??
+## More Code
 
 ;; TODO punch this transition up
 
@@ -463,14 +463,17 @@ and code to generate the state transition diagram image.
 
 ## Thanks for Logging In!
 
-We've tried to walk you through our design process.  There is, admittedly,
-plenty of subjectivity in both design and implementation.  The real power here
-is the model -- the state machine -- which creates all sorts of opportunity.
-For example, once you've enumerated all of the UI's states, you could easily
-prototype them all up front.  You could automate testing of such a prototype by
-mocking up a _single_ bit of app state (`:state` in this case).  In addition,
-by using a widely understood abstraction, you empower programmers joining your
-project, who might not be familiar with your particular technology choices.
+;; TODO we tried to show you how we do it
+;; TODO we want you to try it
+;; TODO but the real power is the model
+
+The real power here is the model -- the state machine -- which creates all
+sorts of opportunity.  For example, once you've enumerated all of the UI's
+states, you could easily prototype them all up front.  You could automate
+testing of such a prototype by mocking up a _single_ bit of app state (`:state`
+in this case).  In addition, by using a widely understood abstraction, you
+empower programmers joining your project, who might not be familiar with your
+particular technology choices.
 
 In future posts, we'll tackle DRYing up this code using [interceptors](),
 composing state machines, parameterizing transitions, and more!
