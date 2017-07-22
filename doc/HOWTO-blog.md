@@ -131,6 +131,7 @@ data literals.
                      :try-login          :logging-in}
  :logging-in        {:login-bad-password :invalid-password
                      :login-no-user      :user-not-exist
+                     :login-success      :logged-in}
  :email-required    {:email-changed      :ready}
  :password-required {:password-changed   :ready}
  :user-not-exist    {:email-changed      :ready}
@@ -149,7 +150,7 @@ them up.  Generating a diagram from your state machine's data can help with
 this, but we've found that right around the time the code becomes hard to read,
 so does the diagram.
 
-* _TIP #2 Keep similar things together._
+_TIP #2 Keep similar things together._
 
 You don't need to create one state machine for your entire UI, or even a single
 view.  For example, if your UI has a user profile page which lets the user
@@ -157,7 +158,7 @@ update their mailing addres in one pane, and notifications settings in another,
 you'll probably want to separate your state machines similarly. We'll go into
 more depth on this in a future post.
 
-* _TIP #3_
+_TIP #3_
 
 ;; TODO
 
@@ -167,11 +168,45 @@ more depth on this in a future post.
 [Re-frame](https://github.com/Day8/re-frame) is a Clojurescript library for
 building React applications. While the approach presented here will work
 regardless of the library or framework you're using, we think it fits
-Re-frame's data oriented design particularly nicely.  We're going to cover some
-Re-frame basics here, but for a real introduction to Re-frame, check out [Eric
-Normand's guide]().
+Re-frame's data oriented design particularly nicely.  For a true introduction
+to Re-frame, check out [Eric Normand's guide]().  We'll quickly cover the
+basic pieces of Re-frame:
 
-Re-frame's essence is a reduction.
+* App state
+* Rendering
+* Subscriptions
+* Events
+
+All of Re-frame's application state is stored in one place -- using a single
+[Reagent] r/atom. Any changes to it trigger rendering.  Rendering in Re-frame
+is exactly what you'd expect: you use pure functions to generate a
+representation of the DOM using [Hiccup]() data.
+
+```clojure
+(defn comment
+ [comment]
+ [:div
+   [:span (:text comment)]
+   [:span (:author comment)]])
+```
+
+Re-frame's subscriptions API is how you expose a particular slice of app state
+to a component.
+
+```clojure
+(defn comments
+  []
+  (let [comments (subscribe [:comments])]
+    [:div (map comment @comments)]))
+
+(reg-sub
+  :comments
+  (fn [db _] (sort-by :date (get db :comments))))
+```
+
+Now, on to the fun part.  Re-frame's essence is a reduction.  To compute the
+current app state, reduce over any queued events by using their registered
+handler functions.
 
 ```clojure
 (reduce handle-event app-state event-queue)
@@ -182,16 +217,17 @@ event, returning a new app state.
 
 ```clojure
 (defn handle-login
-  [db event]
+  [current-app-state event]
   ...
-  db')
+  new-app-state)
 
-;; Register event handler
+;; Register event handler to a keyword
 (re-frame.core/reg-event-db :login handle-login)
 ```
 
-This lines up perfectly with a state machine's state transition function, which
-is a function of the current sate and a transition, returning the next state.
+This looks eerily similar to a state machine's state transition function, which
+is a function of the current state and a transition (and the state machine
+itself), returning the next state.
 
 ```clojure
 (defn next-state
@@ -200,16 +236,19 @@ is a function of the current sate and a transition, returning the next state.
   next-state)
 ```
 
-To recap, our state machine is a map of state to a transition map.
+To recap, our state machine is a map.
 
 ```clojure
-(def state-machine {nil      {:init   :ready}
-                    :ready   {:start  :running}
-                    :running {:finish :done
-                              :abort  :error}})
-```
+(def state-machine {nil                {:init               :ready}
+                    :ready             {:login-no-password  :password-required
+                                        :login-no-email     :email-required
+                                        :try-login          :logging-in}
+                    :logging-in        {:login-bad-password :invalid-password
+                                        ...}
+                    ...}
+ ```
 
-With this in mind, the implementation of `next-state`, minus any
+With this in mind, a basic implementation of `next-state`, minus any
 error-handling, is pretty simple.
 
 ```clojure
@@ -218,43 +257,57 @@ error-handling, is pretty simple.
   (get-in state-machine [current-state transition]))
 ```
 
-For our example, we'll use a convenience function which closes over our state
-machine.
+`update-next-state` uses Re-frame's app state to keep track of the current
+state of our login state machine. `handle-next-state` is the last link in the
+chain, allowing us to do what we've been describing: treat Re-frame events as
+the transitions of our state machine.
 
 ```clojure
 (def login-state-machine { ... })
 
-(def login-next-state (partial next-state loginstate-machine))
+(defn update-next-state
+  [db event]
+  (update db :state (partial next-state login-state-machine) event))
+
+(defn handle-next-state
+  [db [event _]]
+  (update-next-state db event))
 ```
 
-Assuming we can map our Re-frame events directly to our state-machine's
-transitions (we can), we'll use a general purpose event handling function.
+;; Draft
 
-```clojure
-(defn next-state
-  [db [event-kw _]]
-  (update db :state login-next-state event-kw))
-```
+;; TODO punch this ending up
 
-That'll allow us to reuse the same code to handle any state change event.
+One thing that I like about this approach is that it _doesn't_ take much code
+to glue these things together. Focus on saying that.
 
-```clojure
-(re-frame.core/reg-event-db :email-changed next-state)
-(re-frame.core/reg-event-db :password-changed next-state)
-```
-
-Even though it isn't quite this simple for every event, as we'll see, hopefully
-this gives you a taste of how naturally this approach feels with Re-frame.
-
+;; TODO work on section name
 ## The Code -or- ??
 
-;; Draft 0
+Now that we've designed our model, and presented some tools for working
+with it in Re-frame, let's dive into our example's implementation.
+
+;; TODO debug the source
+
+;; TODO do we want to show the interceptor refactor here?
+;; TODO Should we have one section for all the code, then one for doing it
+;; with interceptors?
 
 ;; TODO link to the complete example source
 ;; TODO what do we actually want to show here?
+;;   initial render function (star pw)
+;;   add functionality for all states
+;;   introduce subscriptions
+;;   create subscriptions that we need
+;;   wire them into the view
+;;   basic event handlers to persist input values
+;;   add handler for login button
+;;   add logic for missing email & password
+;;   update set-x handlers to transition back to ready
 ;; TODO refer to previous diagram?
 
 ## Final Thoughts -or- Thanks for Logging In!
 
+;; TODO Not DRY, there's some stuff we can extract (if we don't do interceptor)
 ;; TODO Lot's of top-down, but still some bottom-up?
 ;; TODO reference final thoughts from previous article
