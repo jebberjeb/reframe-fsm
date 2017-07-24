@@ -29,26 +29,25 @@ Prior to our enlightenment, when building a new React UI, we usually began by
 writing code to render the things on the screen -- buttons, drop-downs, lists
 -- then composed them into views.  Once we had enough of this rendering code in
 place, we wired things together with events.  At some point, we were forced to
-add state to our UI. In other words, we did bottom-up design.
+add state to our UI.  In other words, we did bottom-up design.
 
-The design approach presented here is different.  We're going to do some
-top-down design before writing a line of code.  We'll examine the UI's events
-and its states in order to build a high-level model using a [State Transition
-Diagram]().
+The design approach presented here is different -- more outside-in.  We're
+going to do some top-down design before writing a line of code.  We'll examine
+the UI's events and its states in order to build a high-level model using a
+[State Transition Diagram]().
 
 <p align="center">
 <img src="fsm1.png" height="400"/>
 </p>
 
 It's tempting to try to list out all of the UI's states then connect them.
-We're not going to do that. We're building UI. UI is event-driven.  We know
-from the previous article that user actions (and system events) become the
+We're not going to do that. We're building UI.  UI is event-driven.  We know
+from the [previous article]() that user actions (and system events) become the
 transitions of the State Transition Diagram.  So we'll start there.  We'll walk
-through all of the things a user can do, discovering all of our UI's states as
-we go.  As each new state is discovered, we'll add it to a table which
-describes it.  The UI starts out with all of its text fields and buttons
-enabled.  We'll name that state "Ready", and make it our State Transition
-Diagram's starting state.
+through the things a user can do, discovering all of our UI's states as we go.
+As each new state is discovered, we'll add it to a table which describes it.
+The UI starts out with all of its text fields and buttons enabled.  We'll name
+that state `Ready`, and make it our State Transition Diagram's starting state.
 
 ```
 State | Error Message | Login Button
@@ -76,7 +75,7 @@ Email_Required   "email required"  Disabled
 
 <img src="fsm3.png"/>
 
-From our `Email_Required` state, we again try to image all the actions a user
+From our `Email_Required` state, we again try to imagine all the actions a user
 can take. Since the Login button is disabled, their only options are to enter
 an email or password.  Consulting our [requirements]() tells us that, at this
 point, nothing interesting happens if they change the password.  However, there
@@ -118,8 +117,8 @@ Password_Required  "password required"  Disabled
 
 Building up our State Transition Diagram incrementally helps us to vet
 requirements up front (you can probably spot some ambiguities in them), as well
-as raise UX questions early. More importantly, we're able to construct a fairly
-complete model of our UI before any real coding happens.
+as raise UX desgin questions early.  More importantly, we're able to construct
+a fairly complete model of our UI before any real coding happens.
 
 ```
 State            | Error Message        | Login Button
@@ -159,9 +158,9 @@ code._
 
 Your first goal with this approach is building a useful model -- something that
 describes your UI at a glance.  Beyond this size, you should consider splitting
-them up.  Generating a diagram from your state machine's data can help with
-this, but we've found that right around the time the code becomes hard to read,
-so does the diagram.
+it up into multiple state machines.  Generating a diagram from your state
+machine's data can help with this, but we've found that right around the time
+the code becomes hard to read, so does the diagram.
 
 _TIP #2 Keep similar things together._
 
@@ -171,7 +170,7 @@ update their mailing addres in one pane, and notifications settings in another,
 you'll probably want to separate your state machines similarly. We'll go into
 more depth on this in a future post.
 
-_TIP #3_
+_TIP #3 _
 
 ;; TODO
 
@@ -179,7 +178,7 @@ _TIP #3_
 ## Re-frame
 
 [Re-frame](https://github.com/Day8/re-frame) is a Clojurescript library for
-building React applications. While the approach presented here will work
+building React applications.  While the approach presented here will work
 regardless of the library or framework you're using, it fits Re-frame's data
 oriented design particularly nicely.  For a proper introduction to Re-frame,
 check out [Eric Normand's guide]().  We'll quickly cover the basic pieces here.
@@ -189,7 +188,7 @@ check out [Eric Normand's guide]().  We'll quickly cover the basic pieces here.
 * Subscriptions
 * Events
 
-All of Re-frame's application state is stored in one place -- using a single
+All of Re-frame's application state is stored in one place using a single
 [Reagent]() `atom`. Any changes to it trigger rendering.  Rendering in Re-frame
 is done exactly how you'd expect: you use pure functions to produce a
 representation of the DOM using [Hiccup]() data.
@@ -210,7 +209,7 @@ returned by the `:comments` subscription changes.
 (defn comments
   []
   (let [comments (subscribe [:comments])]
-    [:div (map comment @comments)]))
+    [:div (map comment @comments)])) ;; <- note you have to deref
 
 (reg-sub
   :comments
@@ -291,11 +290,9 @@ event handlers is an indicator of how naturally they fit together.  As usual,
 Clojure's powerful data literals deserve a lot of the credit.
 
 
-## More Code
+## Ready --> Design --> Code
 
 ;; TODO punch this transition up
-
-;; START DRAFT 0
 
 After designing our model up front, we usually switch back to a traditional,
 bottom-up approach to the rest of the design.  We'll start with a simple
@@ -326,7 +323,7 @@ look familiar.
    :on-change #(rf/dispatch [:change-email (-> % .-target .-value)])}]
 ```
 
-We'll register the subscription.
+We'll register the subscription, to get email from app state.
 
 ```clojure
 (rf/reg-sub
@@ -334,7 +331,7 @@ We'll register the subscription.
   (fn [db _] (get db :email)))
 ```
 
-And an event handler.
+And an event handler, to store email in app state.
 
 ```clojure
 (defn handle-change-email
@@ -362,10 +359,11 @@ After doing the same for our password input, let's wire up the button's
 (rf/reg-event-db :login-click handle-login-click)
 ```
 
-With the plumbing out of the way, things can get interesting. We're going to
-start integrating our login state machine.  We'll start by adding logic to
-handle a blank email.  So, we're interested in the transition from `Ready` to
-`Email_Required`, via `login_no_email`.
+With the plumbing out of the way, things can finally get interesting. We're
+going to start integrating our login state machine which we defined during the
+above design.  We'll start by adding logic to handle a blank email.  So, we're
+interested in the transition from `Ready` to `Email_Required`, via
+`login_no_email`.
 
 ```clojure
 (defn handle-click-login
@@ -379,7 +377,7 @@ In other words, when email is blank, all we have to do is advance our state
 machine using the appropriate transition.  That's it!  Actually, we can do a
 bit better.  As with [Redux]() actions, Re-frame's postition is that
 semantically useful, named events are a good thing.  Some people feel this gets
-a little ping-pongy, but we like fine-grained events for traceability. They
+a little ping-pongy, but we like fine-grained events for traceability.  They
 play well with debugging tools like [Re-frisk](), and facilitate time travel.
 
 ```clojure
