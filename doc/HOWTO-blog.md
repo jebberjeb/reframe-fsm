@@ -7,16 +7,17 @@ realized this pattern had transformed our codebase.  A consistent approach to
 design and a simple high-level abstraction had made extending each other's code
 a piece of cake.
 
-Last time, we presented this state machine based approach to UI programming.
-We discussed some of the problems it solves by contrasting it with a more
-traditional bottom-up, ad hoc approach.  In this article, we take you through a
-complete example of how to apply this technique using a simple login UI. We're
-going to use Clojurescript and, since this will be a React app, we'll use
-Re-frame.
+[Last time](), we presented this state machine based approach to UI
+programming.  We discussed some of the problems it solves by contrasting it
+with a more traditional bottom-up, ad hoc approach.  In this article, we take
+you through an example of how to apply this technique using a simple login UI.
 
-;; TODO add "if you don't know Re-frame, that's ok" verbiage
+![LoginFormImage](https://cdn.colorlib.com/wp/wp-content/uploads/sites/2/Bootstrap_Snippet_Login_Form.png)
 
-;; TODO show a basalmiq mock of the UI
+We're going to use Clojurescript and, since this will be a React app, we'll use
+[Re-frame]().  If you haven't used Re-frame, that's ok.  Re-frame does a great
+job of sticking to Clojure idioms you're probably already familiar with.  We'll
+also give you a quick overview of the basics.
 
 
 ## Modeling Your UI
