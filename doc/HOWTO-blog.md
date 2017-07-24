@@ -12,7 +12,7 @@ programming.  We discussed some of the problems it solves by contrasting it
 with a more traditional bottom-up, ad hoc approach.  In this article, we take
 you through an example of how to apply this technique using a simple login UI.
 
-![LoginFormImage](https://cdn.colorlib.com/wp/wp-content/uploads/sites/2/Bootstrap_Snippet_Login_Form.png)
+<img src="https://cdn.colorlib.com/wp/wp-content/uploads/sites/2/Bootstrap_Snippet_Login_Form.png" width="400"/>
 
 We're going to use Clojurescript and, since this will be a React app, we'll use
 [Re-frame]().  If you haven't used Re-frame, that's ok.  Re-frame does a great
