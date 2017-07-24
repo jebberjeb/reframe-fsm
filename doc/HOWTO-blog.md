@@ -93,7 +93,7 @@ Ready            ""                Enabled
 Email_Required   "email required"  Disabled
 ```
 
-[start] --> Ready <-change_email- -click_login_button-> Email_Required
+<img src="fsm4.png"/>
 
 Alright, we're not going to drag you through the entire exercise, but let's
 do one more transition, and we'll move on.
