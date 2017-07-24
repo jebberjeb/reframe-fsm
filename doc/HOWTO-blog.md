@@ -132,11 +132,7 @@ Invalid_Password   "invalid password"     Disabled
 Loggin_In          ""                     Disabled
 ```
 
-[start] --> Ready <-change_email- -click_login_no_email-> Email_Required
-                  -click_login_no_password-> Password_Required
-
-;; TODO Add transitions to and from the new states, making sure to add the
-;; `Logging_In` state.
+<img src="fsm6.png"/>
 
 The resulting State Transition Diagram can be represented using simple Clojure
 data literals.
@@ -152,7 +148,7 @@ data literals.
  :email-required    {:email-changed      :ready}
  :password-required {:password-changed   :ready}
  :user-not-exist    {:email-changed      :ready}
- :invalid-password  {:password-changed   :ready}
+ :invalid-password  {:password-changed   :ready}}
 ```
 
 Before we dive into the code, let's go over a few things we've learned which
