@@ -74,7 +74,7 @@ Ready            ""                Enabled
 Email_Required   "email required"  Disabled
 ```
 
-[start] --> Ready -click_login_button-> Email_Required
+<img src="fsm3.png"/>
 
 From our `Email_Required` state, we again try to image all the actions a user
 can take. Since the Login button is disabled, their only options are to enter
