@@ -56,7 +56,7 @@ State | Error Message | Login Button
 Ready   ""              Enabled
 ```
 
-<img src="fsm2.png"/>
+<img src="fsm2.svg"/>
 
 There are really only two things a user can do from our `Ready` state: type
 some text into a field, or click the Login button.  Buttons are meant to be
