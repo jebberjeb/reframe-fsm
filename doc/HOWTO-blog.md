@@ -463,17 +463,18 @@ and code to generate the state transition diagram image.
 
 ## Thanks for Logging In!
 
-;; TODO we tried to show you how we do it
-;; TODO we want you to try it
-;; TODO but the real power is the model
+We've walked you through our thought process during both design &
+implementation of a UI using a state machine based approach.  As you've
+probably noticed, there's a fair amount of subjectivity involved with each.
+That's ok.  The real power here isn't how you arrive at it, but that you're
+producing a model -- the state machine itself -- at all.  It opens up all sorts
+of opportunities to test, to visualize, prototype, and just makes it easier to
+maintain and extend your UI.  Our experience, after using this approach for
+several months, was that it dramatically slowed the rate at which UI code
+degrades into a pile of spaghetti.  It also made onboarding new members of our
+team, who weren't familiar with our tech choices, much easier.
 
-The real power here is the model -- the state machine -- which creates all
-sorts of opportunity.  For example, once you've enumerated all of the UI's
-states, you could easily prototype them all up front.  You could automate
-testing of such a prototype by mocking up a _single_ bit of app state (`:state`
-in this case).  In addition, by using a widely understood abstraction, you
-empower programmers joining your project, who might not be familiar with your
-particular technology choices.
+In future posts, we'll tackle DRYing up this code using [interceptors]().
+We'll also show you how to build a more complex UI by composing state machines.
 
-In future posts, we'll tackle DRYing up this code using [interceptors](),
-composing state machines, parameterizing transitions, and more!
+;; TODO punch it up, need a concluding sentence
