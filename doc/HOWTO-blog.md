@@ -31,14 +31,14 @@ writing code to render the things on the screen -- buttons, drop-downs, lists
 place, we wired things together with events.  At some point, we were forced to
 add state to our UI. In other words, we did bottom-up design.
 
-;; TODO - link STD
-
 The design approach presented here is different.  We're going to do some
 top-down design before writing a line of code.  We'll examine the UI's events
 and its states in order to build a high-level model using a [State Transition
 Diagram]().
 
-;; TODO - show an example state transition diagram graphic
+<p align="center">
+<img src="fsm1.png" height="400"/>
+</p>
 
 It's tempting to try to list out all of the UI's states then connect them.
 We're not going to do that. We're building UI. UI is event-driven.  We know
