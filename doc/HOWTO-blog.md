@@ -50,9 +50,11 @@ describes it.  The UI starts out with all of its text fields and buttons
 enabled.  We'll name that state "Ready", and make it our State Transition
 Diagram's starting state.
 
+```
 State | Error Message | Login Button
 ------+---------------+-------------
 Ready   ""              Enabled
+```
 
 [start] --> Ready
 
@@ -65,10 +67,12 @@ appearance has changed, that means we've moved to a new state state, which
 we'll call `Email_Required`. Let's add the details about `Email_Required` to
 our table, as well as our State Transition Diagram.
 
+```
 State          | Error Message   | Login Button
 ---------------+-----------------+-------------
 Ready            ""                Enabled
 Email_Required   "email required"  Disabled
+```
 
 [start] --> Ready -click_login_button-> Email_Required
 
@@ -82,10 +86,12 @@ the _Login button is enabled when no error present_.  Our UI's appearance has
 changed again, back to what it looked like in the `Ready` state. Once again,
 let's update our table and State Transition Diagram.
 
+```
 State          | Error Message   | Login Button
 ---------------+-----------------+-------------
 Ready            ""                Enabled
 Email_Required   "email required"  Disabled
+```
 
 [start] --> Ready <-change_email- -click_login_button-> Email_Required
 
@@ -100,11 +106,13 @@ this action `click_login_no_password` (we'll also update our other action names
 to make them more specific).  One last time, we'll update our table and State
 Transition Diagram.
 
+```
 State            | Error Message      | Login Button
 -----------------+--------------------+-------------
 Ready              ""                   Enabled
 Email_Required     "email required"     Disabled
 Password_Required  "password required"  Disabled
+```
 
 [start] --> Ready <-change_email- -click_login_no_email-> Email_Required
                   -click_login_no_password-> Password_Required
@@ -114,6 +122,7 @@ requirements up front (you can probably spot some ambiguities in them), as well
 as raise UX questions early. More importantly, we're able to construct a fairly
 complete model of our UI before any real coding happens.
 
+```
 State            | Error Message        | Login Button
 -----------------+----------------------+-------------
 Ready              ""                     Enabled
@@ -122,6 +131,7 @@ Password_Required  "password required"    Disabled
 User_Not_Exist     "user does not exist"  Disabled
 Invalid_Password   "invalid password"     Disabled
 Loggin_In          ""                     Disabled
+```
 
 [start] --> Ready <-change_email- -click_login_no_email-> Email_Required
                   -click_login_no_password-> Password_Required
