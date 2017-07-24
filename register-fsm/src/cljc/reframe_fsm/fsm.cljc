@@ -22,7 +22,7 @@
 
 (defn next-state
   [db event]
-  (if-let [new-state (get-in core-fsm [(:state db) event])]
+  (if-let [new-state (get-in fsm [(:state db) event])]
     (assoc db :state new-state)
     db))
 

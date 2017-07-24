@@ -3,7 +3,6 @@
 This is an example login UI, using the Re-frame library, with an FSM-based
 approach.
 
-
 ## Requirements
 
 * When login button is clicked
@@ -42,8 +41,6 @@ goal was to show a spartan example of the FSM based approach, attempting to
 avoid any incidental complexity.
 
 ## License
-
-Copyright © 2017 FIXME
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
