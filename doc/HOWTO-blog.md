@@ -114,8 +114,7 @@ Email_Required     "email required"     Disabled
 Password_Required  "password required"  Disabled
 ```
 
-[start] --> Ready <-change_email- -click_login_no_email-> Email_Required
-                  -click_login_no_password-> Password_Required
+<img src="fsm5.png"/>
 
 Building up our State Transition Diagram incrementally helps us to vet
 requirements up front (you can probably spot some ambiguities in them), as well
