@@ -1,53 +1,56 @@
 # Restate Your UI: Creating a User Interface with Re-frame and State Machines
 
-Earlier this year our team started experimenting with state machines in our
-user interface programming.  After a few months of unusually tolerable UI work,
-dozens of "Aha!" moments, and some (lots of) back patting, we looked back and
-realized this pattern had transformed our codebase.  A consistent approach to
-design and a simple high-level abstraction had made extending each other's code
-a piece of cake.
+I said it [before]() and I'll say it again: I hate working on user interfaces.
+It's not the interfaces themselves, it's the code behind them that drives me a
+little crazy.  Behind most user interfaces is an ad hoc tangle of features
+layered on top of other features that I would call byzantine except that would
+be an insult to the hardworking builders of the Byzantine empire.
 
-[Last time](), we presented this state machine based approach to UI
-programming.  We discussed some of the problems it solves by contrasting it
-with a more traditional bottom-up, ad hoc approach.  In this article, we take
-you through an example of how to apply this technique using a simple login UI.
+In that last article I talked about the ideas behind a state machine based
+approach to UI programming, one avoids much of the pain of the more traditional
+approach.  In this article I'm going to take you through an example of how to
+apply this technique using a simple login UI.  We're going to use Clojurescript
+and, since this will be a React app, we'll use [Re-frame]().  If you haven't
+used Re-frame, don't worry, there's not that much to it and we'll be sticking
+to the Clojure idioms you are already using.
 
+## Modeling Your UI
+
+The example we'll be working with is a simple login UI. Let's assume the [usual
+rules]() apply.  Email and password can't be blank.  Show one error at a time.
+Disable the login button when an error is visible.
 
 <p align="center">
 <img src="https://cdn.colorlib.com/wp/wp-content/uploads/sites/2/Bootstrap_Snippet_Login_Form.png" width="400"/>
 </p>
 
-We're going to use Clojurescript and, since this will be a React app, we'll use
-[Re-frame]().  If you haven't used Re-frame, that's ok.  Re-frame does a great
-job of sticking to Clojure idioms you're probably already familiar with.  We'll
-also give you a quick overview of the basics.
+The traditional sequence for building a UI is to start by writing code to
+render things on the screen.  We throw up some buttons, drop-downs, lists and
+then compose them into views.  Once we have enough of this rendering code in
+place, we wire things together with events.  And then, when we can't go any
+further, we add state.  In other words, we build it from the bottom-up.
 
+;; TODO maybe would be better to say "We'll take a different approach here,
+;; starting from the top, by thinking about ...
+;; rather than specifically saying "top-down" anywhere.
 
-## Modeling Your UI
-
-Prior to our enlightenment, when building a new React UI, we usually began by
-writing code to render the things on the screen -- buttons, drop-downs, lists
--- then composed them into views.  Once we had enough of this rendering code in
-place, we wired things together with events.  At some point, we were forced to
-add state to our UI.  In other words, we did bottom-up design.
-
-The design approach presented here is different -- more outside-in.  We're
-going to do some top-down design before writing a line of code.  We'll examine
-the UI's events and its states in order to build a high-level model using a
-[State Transition Diagram]().
+We'll take a different approach here. We'll do some top-down design _before_ we
+write a line of code.  We're going to start by thinking about events and
+application states in order to rough out a high-level model using [State
+Transition Diagrams]().
 
 <p align="center">
 <img src="fsm1.png" height="400"/>
 </p>
 
 It's tempting to try to list out all of the UI's states then connect them.
-We're not going to do that. We're building UI.  UI is event-driven.  We know
+We're not going to do that.  We're building UI.  UI is event-driven.  We know
 from the [previous article]() that user actions (and system events) become the
 transitions of the State Transition Diagram.  So we'll start there.  We'll walk
 through the things a user can do, discovering all of our UI's states as we go.
 As each new state is discovered, we'll add it to a table which describes it.
 The UI starts out with all of its text fields and buttons enabled.  We'll name
-that state `Ready`, and make it our State Transition Diagram's starting state.
+that state `Ready`, and make it our starting state.
 
 ```
 State | Error Message | Login Button
@@ -57,14 +60,17 @@ Ready   ""              Enabled
 
 <img src="fsm2.png"/>
 
-There are really only two things a user can do from our `Ready` state: type
-some text into a field, or click the Login button.  Buttons are meant to be
-clicked, so let's go with that.  Let's call that action `click_login_button`.
-The result, per our [requirements](README.md#requirements), is to display the
-error "email required" and to disable the Login button.  Since our UI's
+There's really only two things a user can do from the `Ready` state: type some
+text into a field, or click the Login button.  Let's start with the button
+click.  We'll call this action `click_login_button`.  The result is to display
+the error "email required" and to disable the Login button.  Since our UI's
 appearance has changed, that means we've moved to a new state state, which
-we'll call `Email_Required`. Let's add the details about `Email_Required` to
-our table, as well as our State Transition Diagram.
+we'll call `Email_Required`.
+
+;; TODO Notice how time has passed.
+
+So we add the details about `Email_Required` to our table, and to our State
+Transition Diagram.
 
 ```
 State          | Error Message   | Login Button
@@ -76,14 +82,18 @@ Email_Required   "email required"  Disabled
 <img src="fsm3.png"/>
 
 From our `Email_Required` state, we again try to imagine all the actions a user
-can take. Since the Login button is disabled, their only options are to enter
-an email or password.  Consulting our [requirements]() tells us that, at this
-point, nothing interesting happens if they change the password.  However, there
-is a requirement to _Remove "email required" error when email is changed_.
-We'll call that action `change_email`.  There's also a general requirement that
-the _Login button is enabled when no error present_.  Our UI's appearance has
-changed again, back to what it looked like in the `Ready` state. Once again,
-let's update our table and State Transition Diagram.
+can take.  Since the Login button is disabled, their only options are to enter
+an email or password.  At this point, nothing interesting happens if they
+change the password, so we'll ignore it.  However, if they enter their email,
+we need to remove the "email required" error message.  We'll call that action
+`change_email`.  Since there's no longer an error present, we can re-enable the
+Login button.  So our UI's appearance changes again, back to what it looked
+like in the `Ready` state.
+
+;; TODO More time has passed...
+
+Once again, let's update our State Transition Diagram.  Since we've returned to
+the `Ready` state, we don't add anything to the state table.
 
 ```
 State          | Error Message   | Login Button
@@ -94,16 +104,15 @@ Email_Required   "email required"  Disabled
 
 <img src="fsm4.png"/>
 
-Alright, we're not going to drag you through the entire exercise, but let's
-do one more transition, and we'll move on.
+I'm not going to drag you through the entire exercise, but let's do one more
+transition.
 
 Back in the `Ready` state, our email field now contains some text.  If we click
-that irresistable Login button again, the rules say that, since the password is
-blank, to display a "password required" error message, and to disable the
+that irresistable Login button again, the rules say that since the password is
+blank we need to display a "password required" error message, then disable the
 Login button.  We'll call our new state, `Password_Required`, and we'll call
-this action `click_login_no_password` (we'll also update our other action names
-to make them more specific).  One last time, we'll update our table and State
-Transition Diagram.
+this action `click_login_no_password`.  This also seems like a good time to
+rename our other actions to make them more specific:
 
 ```
 State            | Error Message      | Login Button
@@ -115,10 +124,13 @@ Password_Required  "password required"  Disabled
 
 <img src="fsm5.png"/>
 
-Building up our State Transition Diagram incrementally helps us to vet
-requirements up front (you can probably spot some ambiguities in them), as well
-as raise UX desgin questions early.  More importantly, we're able to construct
-a fairly complete model of our UI before any real coding happens.
+Building up a State Transition Diagram incrementally helps you vet requirements
+up front (you can probably spot some ambiguities in them), as well as raise UX
+desgin questions early.  More importantly, you're able to construct a fairly
+complete model of our UI before getting bogged down in code.
+
+As promised, here are the complete state table and State Transition Diagram
+we'll refer to during our implementation below.
 
 ```
 State            | Error Message        | Login Button
@@ -133,8 +145,8 @@ Loggin_In          ""                     Disabled
 
 <img src="fsm6.png"/>
 
-The resulting State Transition Diagram can be represented using simple Clojure
-data literals.
+The State Transition Diagram can be represented using simple Clojure data
+literals.
 
 ```clojure
 {nil                {:init               :ready}
@@ -150,8 +162,8 @@ data literals.
  :invalid-password  {:password-changed   :ready}}
 ```
 
-Before we dive into the code, let's go over a few things we've learned which
-might help you when using this design approach.
+Before we dive into the code, here are a few things to keep in mind as you dive
+into your state machines:
 
 _TIP #1 Your state machine shouldn't require more than a page of Clojure
 code._
@@ -159,15 +171,15 @@ code._
 Your first goal with this approach is building a useful model -- something that
 describes your UI at a glance.  Beyond this size, you should consider splitting
 it up into multiple state machines.  Generating a diagram from your state
-machine's data can help with this, but we've found that right around the time
-the code becomes hard to read, so does the diagram.
+machine's data can help with this, but usually right around the time the code
+becomes hard to read, so does the diagram.
 
 _TIP #2 Keep similar things together._
 
 You don't need to create one state machine for your entire UI, or even a single
 view.  For example, if your UI has a user profile page which lets the user
 update their mailing addres in one pane, and notifications settings in another,
-you'll probably want to separate your state machines similarly. We'll go into
+you'll probably want to separate your state machines similarly.  We'll go into
 more depth on this in a future post.
 
 _TIP #3 _
@@ -178,10 +190,10 @@ _TIP #3 _
 ## Re-frame
 
 [Re-frame](https://github.com/Day8/re-frame) is a Clojurescript library for
-building React applications.  While the approach presented here will work
-regardless of the library or framework you're using, it fits Re-frame's data
-oriented design particularly nicely.  For a proper introduction to Re-frame,
-check out [Eric Normand's guide]().  We'll quickly cover the basic pieces here.
+building React applications.  While the FSM approach will work with any library
+or framework it fits Re-frame's data oriented design well.  For a proper
+introduction to Re-frame, check out [Eric Normand's guide]().  We'll quickly
+cover the very basics here.
 
 * Application state
 * Rendering
@@ -189,8 +201,8 @@ check out [Eric Normand's guide]().  We'll quickly cover the basic pieces here.
 * Events
 
 All of Re-frame's application state is stored in one place using a single
-[Reagent]() `atom`. Any changes to it trigger rendering.  Rendering in Re-frame
-is done exactly how you'd expect: you use pure functions to produce a
+[Reagent]() `atom`. Any changes to that atom will trigger a render.  Rendering
+in Re-frame is done just as you'd expect: you use pure functions to produce a
 representation of the DOM using [Hiccup]() data.
 
 ```clojure
@@ -216,7 +228,7 @@ returned by the `:comments` subscription changes.
   (fn [db _] (sort-by :date (get db :comments))))
 ```
 
-Now, on to the fun part.  True to its functional nature, Re-frame's _essence_
+Now for the fun part.  True to its functional nature, Re-frame's _essence_
 is nothing more than a reduction.  To compute the current app state, simply
 reduce over any queued events by using their registered handler functions.
 
@@ -292,11 +304,9 @@ Clojure's powerful data literals deserve a lot of the credit.
 
 ## Ready --> Design --> Code
 
-;; TODO punch this transition up
-
-After designing our model up front, we usually switch back to a traditional,
-bottom-up approach to the rest of the design.  We'll start with a simple
-rendering function that knows nothing about events or app state.
+Now that we have our model in hand, we can switch back to some bottom-up
+coding.  We'll start with a simple rendering function that knows nothing about
+events or app state.
 
 ```clojure
 (defn ui
@@ -373,11 +383,11 @@ interested in the transition from `Ready` to `Email_Required`, via
     db))
 ```
 
-In other words, when email is blank, all we have to do is advance our state
+In other words, when the email is blank, all we have to do is advance our state
 machine using the appropriate transition.  That's it!  Actually, we can do a
 bit better.  As with [Redux]() actions, Re-frame's postition is that
 semantically useful, named events are a good thing.  Some people feel this gets
-a little ping-pongy, but we like fine-grained events for traceability.  They
+a little ping-pongy, but fine-grained events are great for traceability.  They
 play well with debugging tools like [Re-frisk](), and facilitate time travel.
 
 ```clojure
@@ -470,18 +480,12 @@ and code to generate the state transition diagram image.
 
 ## Thanks for Logging In!
 
-We've walked you through our thought process during both design &
-implementation of a UI using a state machine based approach.  As you've
-probably noticed, there's a fair amount of subjectivity involved with each.
-That's ok.  The real power here isn't how you arrive at it, but that you're
-producing a model -- the state machine itself -- at all.  It opens up all sorts
-of opportunities to test, to visualize, prototype, and just makes it easier to
-maintain and extend your UI.  Our experience, after using this approach for
-several months, was that it dramatically slowed the rate at which UI code
-degrades into a pile of spaghetti.  It also made onboarding new members of our
-team, who weren't familiar with our tech choices, much easier.
+So that's how I approach building UIs with state machines: Start with some
+upfront design and then start coding.  It works for me and it might just work
+for you.  But the real power of state machine based UIs is not really the
+process but the output.  You end up with a model -- the state machine itself --
+that opens up all sorts of opportunities to test, to visualize, prototype,
+maintain and extend you application.
 
-In future posts, we'll tackle DRYing up this code using [interceptors]().
-We'll also show you how to build a more complex UI by composing state machines.
-
-;; TODO punch it up, need a concluding sentence
+In future posts, I'll tackle DRYing up the code using [interceptors]() and also
+show you how to build a more complex UI by composing state machines.
