@@ -157,8 +157,6 @@
 (reagent/render [ui] (js/document.getElementById "app"))
 (rf/dispatch [:init])
 
-;; TODO - shouldn't need :init handler anymore, next-state should work.
-
 (comment
   (require '[fsmviz.core])
   (fsmviz.core/generate-image login-state-machine "fsm"))
